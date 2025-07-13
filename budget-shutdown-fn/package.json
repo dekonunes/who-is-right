@@ -1,0 +1,6 @@
+{
+  "name": "budget-shutdown-fn",
+  "dependencies": {
+    "googleapis": "^130.0.0"
+  }
+}

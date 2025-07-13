@@ -27,14 +27,17 @@ This project is currently in development. The basic React setup is complete, and
 
 1. Clone this repository
 2. Install dependencies:
+
    ```bash
    npm install
    ```
 
 3. Set up environment variables:
+
    ```bash
    cp .env.example .env
    ```
+
    Edit `.env` and add your API key
 
 4. Start the development server:
