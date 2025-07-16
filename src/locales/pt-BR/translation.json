@@ -1,7 +1,7 @@
 {
   "appName": "Quem Está Certo?",
-  "questionLabel": "Pergunta",
-  "questionPlaceholder": "Digite sua pergunta...",
+  "questionLabel": "O que está em jogo?",
+  "questionPlaceholder": "Digite a situação...",
   "herMessage": "Mensagem dela",
   "hisMessage": "Resposta dele",
   "answerA": "Resposta A",

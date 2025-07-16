@@ -1,7 +1,7 @@
 {
   "appName": "Who Is Right?",
   "questionLabel": "What's the argument about?",
-  "questionPlaceholder": "Enter the couple's question...",
+  "questionPlaceholder": "Enter the couple's situation...",
   "herMessage": "What she thinks",
   "hisMessage": "What he thinks",
   "answerA": "Answer A",

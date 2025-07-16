@@ -1,16 +1,24 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import MainLayout from "./components/MainLayout";
 import ResultDisplay from "./components/ResultDisplay";
 import { useTranslation } from "react-i18next";
 import womanImg from "./assets/woman.png";
 import manImg from "./assets/man.png";
 
-const QUESTION_MAX = 300;
-const ANSWER_MAX = 200;
+const QUESTION_MAX = 500;
+const ANSWER_MAX = 300;
 const MIN_LENGTH = 5;
 
 const App: React.FC = () => {
   const { t } = useTranslation();
+  const userTypes = [
+    { key: "couple", label: "Couple" },
+    { key: "friends", label: "Friends" },
+    { key: "mom_and_child", label: "Mom and Child" },
+    { key: "siblings", label: "Siblings" },
+    { key: "co_workers", label: "Co-Workers" },
+    { key: "boss_and_employee", label: "Boss and Employee" },
+  ];
   const [question, setQuestion] = useState("");
   const [answerA, setAnswerA] = useState("");
   const [answerB, setAnswerB] = useState("");
@@ -25,6 +33,8 @@ const App: React.FC = () => {
     null
   );
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<string>(userTypes[0].key);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   const validate = () => {
     const errs: typeof errors = {};
@@ -84,8 +94,9 @@ const App: React.FC = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             question,
-            herStory: answerA,
-            hisStory: answerB,
+            answerA,
+            answerB,
+            type: selectedType,
           }),
         }
       );
@@ -98,6 +109,10 @@ const App: React.FC = () => {
         setSaveStatus("success");
         setSaveError(null);
         setResult(data.verdict || t("resultPlaceholder"));
+        // Scroll to result
+        setTimeout(() => {
+          resultRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
       }
     } catch (err: any) {
       setSaveStatus("error");
@@ -121,8 +136,25 @@ const App: React.FC = () => {
         <h2 className="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-3">
           {t("appName", "Settle the score")}
         </h2>
+        {/* User type selection buttons */}
+        <div className="flex flex-row flex-wrap gap-3 justify-center mb-6">
+          {userTypes.map((typeObj) => (
+            <button
+              key={typeObj.key}
+              type="button"
+              className={`px-4 py-2 rounded-full font-semibold shadow focus:outline-none bg-[#293a42] text-white hover:bg-[#35505c] ${
+                selectedType === typeObj.key
+                  ? "ring-2 ring-[#add6ea] bg-[#35505c]"
+                  : ""
+              }`}
+              onClick={() => setSelectedType(typeObj.key)}
+            >
+              {typeObj.label}
+            </button>
+          ))}
+        </div>
         <form onSubmit={handleSubmit} className="w-full">
-          <div className="flex flex-wrap flex-col direction items-start gap-4 px-4 py-2">
+          <div className="flex flex-wrap flex-col direction items-start px-4">
             <label
               htmlFor="question-input"
               className="block text-white text-base font-medium mb-1"
@@ -135,7 +167,7 @@ const App: React.FC = () => {
                 "questionPlaceholder",
                 "Enter the couple's question..."
               )}
-              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#293a42] focus:border-none h-14 placeholder:text-[#9ab4c1] p-4 text-base font-normal leading-normal"
+              className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#293a42] focus:border-none min-h-24 placeholder:text-[#9ab4c1] p-4 text-base font-normal leading-normal"
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               maxLength={QUESTION_MAX}
@@ -163,7 +195,7 @@ const App: React.FC = () => {
           <img
             src={womanImg}
             alt={t("herMessage", "Her avatar")}
-            className="w-48 h-48 object-contain mr-3 hidden sm:block"
+            className="w-24 h-24 object-contain mr-3 md:w-48 md:h-48"
           />
           <div className="flex-1 w-full">
             <label
@@ -232,7 +264,7 @@ const App: React.FC = () => {
           <img
             src={manImg}
             alt={t("hisMessage", "His avatar")}
-            className="w-48 h-48 object-contain ml-3 hidden sm:block"
+            className="w-24 h-24 object-contain mr-3 md:w-48 md:h-48"
           />
         </div>
         <div className="flex justify-center">
@@ -260,6 +292,7 @@ const App: React.FC = () => {
         {loading || result ? (
           <ResultDisplay result={result} loading={loading} />
         ) : null}
+        <div ref={resultRef} />
       </div>
     </MainLayout>
   );
