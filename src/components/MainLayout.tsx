@@ -10,7 +10,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const navLinks = [
     { label: t("howItWorks"), href: "/how-it-works" },
-    { label: t("contact"), href: "#" },
+    {
+      label: t("contact"),
+      href: "mailto:dekonunesss@gmail.com?subject=I want to build AI website",
+    },
   ];
 
   return (

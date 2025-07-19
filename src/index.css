@@ -2,6 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ad container styles */
+.ad-container {
+  min-height: 90px;
+  background: rgba(41, 58, 66, 0.1);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.ad-container ins {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Responsive ad sizing */
+@media (max-width: 768px) {
+  .ad-container {
+    min-height: 60px;
+  }
+}
+
+/* Loading state for ads */
+.ad-container:empty::before {
+  content: "Advertisement";
+  color: #9ab4c1;
+  font-size: 14px;
+  opacity: 0.6;
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

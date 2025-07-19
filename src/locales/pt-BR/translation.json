@@ -78,5 +78,7 @@
   "finalMessage": "Divirta-se, não brigue muito, e lembre-se — a IA está sempre errada... ou certa... ou o que ela quiser hoje!",
   "backToApp": "Voltar ao App",
   "saveSuccess": "Debate salvo com sucesso!",
-  "saveError": "Falha ao salvar debate"
+  "saveError": "Falha ao salvar debate",
+  "dailyLimitExceeded": "Limite diário atingido. Você usou todos os 15 debates gratuitos hoje. Tente novamente amanhã! Ou contate-me no botão de contato",
+  "remainingUses": "{{count}} debates restantes hoje"
 }

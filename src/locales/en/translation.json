@@ -77,5 +77,7 @@
   "finalMessage": "Have fun, don't fight too hard, and remember — the AI is always wrong… or right… or whatever it feels like today!",
   "backToApp": "Back to App",
   "saveSuccess": "Debate saved successfully!",
-  "saveError": "Failed to save debate"
+  "saveError": "Failed to save debate",
+  "dailyLimitExceeded": "Daily limit reached. You've used all 15 free debates today. Please try again tomorrow! Or contact me on contact button",
+  "remainingUses": "{{count}} debates remaining today"
 }

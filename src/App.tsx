@@ -1,15 +1,62 @@
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "./firebase";
 import MainLayout from "./components/MainLayout";
 import ResultDisplay from "./components/ResultDisplay";
 import HowItWorks from "./components/HowItWorks";
+import AdBox from "./components/AdBox";
 import { useTranslation } from "react-i18next";
+import {
+  sanitizeInput,
+  validateInput,
+  isValidDebateType,
+} from "./utils/security";
 import womanImg from "./assets/woman.png";
 import manImg from "./assets/man.png";
 
 const QUESTION_MAX = 500;
 const ANSWER_MAX = 300;
 const MIN_LENGTH = 5;
+const DAILY_LIMIT = 15;
+
+// Daily usage limit helpers
+const checkDailyLimit = () => {
+  const today = new Date().toDateString();
+  const usage = JSON.parse(localStorage.getItem("dailyUsage") || "{}");
+
+  if (usage.date !== today) {
+    // Reset for new day
+    localStorage.setItem(
+      "dailyUsage",
+      JSON.stringify({ date: today, count: 0 })
+    );
+    return true;
+  }
+
+  return usage.count < DAILY_LIMIT;
+};
+
+const incrementUsage = () => {
+  const today = new Date().toDateString();
+  const usage = JSON.parse(localStorage.getItem("dailyUsage") || "{}");
+
+  if (usage.date !== today) {
+    usage.date = today;
+    usage.count = 0;
+  }
+
+  usage.count++;
+  localStorage.setItem("dailyUsage", JSON.stringify(usage));
+};
+
+const getRemainingUses = () => {
+  const usage = JSON.parse(localStorage.getItem("dailyUsage") || "{}");
+  const today = new Date().toDateString();
+
+  if (usage.date !== today) return DAILY_LIMIT;
+  return Math.max(0, DAILY_LIMIT - usage.count);
+};
 
 const userTypes = [
   {
@@ -64,6 +111,7 @@ const userTypes = [
 
 interface MainAppProps {
   t: (key: string, fallback?: string) => string;
+  i18n: any;
   question: string;
   setQuestion: (value: string) => void;
   answerA: string;
@@ -91,6 +139,7 @@ interface MainAppProps {
 
 const MainApp: React.FC<MainAppProps> = ({
   t,
+  i18n,
   question,
   setQuestion,
   answerA,
@@ -129,7 +178,14 @@ const MainApp: React.FC<MainAppProps> = ({
               ? "ring-2 ring-[#add6ea] bg-[#35505c]"
               : ""
           }`}
-          onClick={() => setSelectedType(typeObj.key)}
+          onClick={() => {
+            setSelectedType(typeObj.key);
+            // Track user type selection
+            logEvent(analytics, "user_type_selected", {
+              user_type: typeObj.key,
+              language: i18n.language,
+            });
+          }}
         >
           {t(`userTypeLabel.${typeObj.key}`, typeObj.label)}
         </button>
@@ -243,7 +299,7 @@ const MainApp: React.FC<MainAppProps> = ({
         type="submit"
         onClick={handleSubmit}
         disabled={loading}
-        className="flex-1 bg-[#add6ea] text-[#131c20] px-6 py-3 rounded-full font-semibold hover:bg-[#8bc4d8] disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex-1 bg-[#add6ea] text-[#131c20] md:text-base text-[0.9rem] px-6 py-3 rounded-full font-semibold hover:bg-[#8bc4d8] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? t("loading", "Checking...") : t("submit", "Who is right?")}
       </button>
@@ -269,12 +325,27 @@ const MainApp: React.FC<MainAppProps> = ({
       </div>
     )}
     {(result || loading) && <ResultDisplay result={result} loading={loading} />}
+    {/* Ad after result */}
+    {result && (
+      <div className="px-4 py-6">
+        <AdBox adSlot="YOUR_AD_SLOT_ID" className="max-w-4xl mx-auto" />
+      </div>
+    )}
     <div ref={resultRef} />
   </div>
 );
 
 const App: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // Track page view on app load
+  useEffect(() => {
+    logEvent(analytics, "page_view", {
+      page_title: "Who is Right?",
+      page_location: window.location.href,
+      language: i18n.language,
+    });
+  }, [i18n.language]);
   const [question, setQuestion] = useState("");
   const [answerA, setAnswerA] = useState("");
   const [answerB, setAnswerB] = useState("");
@@ -330,42 +401,42 @@ const App: React.FC = () => {
 
   const validate = () => {
     const errs: typeof errors = {};
-    if (!question.trim())
+
+    // Validate and sanitize question
+    const sanitizedQuestion = sanitizeInput(question);
+    if (!sanitizedQuestion.trim())
       errs.question = t("required", { field: t("questionLabel") });
-    else if (question.length < MIN_LENGTH)
+    else if (!validateInput(sanitizedQuestion, QUESTION_MAX, MIN_LENGTH))
       errs.question = t("minLength", {
         field: t("questionLabel"),
         min: MIN_LENGTH,
       });
-    else if (question.length > QUESTION_MAX)
-      errs.question = t("maxLength", {
-        field: t("questionLabel"),
-        max: QUESTION_MAX,
-      });
-    if (!answerA.trim())
+
+    // Validate and sanitize answerA
+    const sanitizedAnswerA = sanitizeInput(answerA);
+    if (!sanitizedAnswerA.trim())
       errs.answerA = t("required", { field: t("herMessage") });
-    else if (answerA.length < MIN_LENGTH)
+    else if (!validateInput(sanitizedAnswerA, ANSWER_MAX, MIN_LENGTH))
       errs.answerA = t("minLength", {
         field: t("herMessage"),
         min: MIN_LENGTH,
       });
-    else if (answerA.length > ANSWER_MAX)
-      errs.answerA = t("maxLength", {
-        field: t("herMessage"),
-        max: ANSWER_MAX,
-      });
-    if (!answerB.trim())
+
+    // Validate and sanitize answerB
+    const sanitizedAnswerB = sanitizeInput(answerB);
+    if (!sanitizedAnswerB.trim())
       errs.answerB = t("required", { field: t("hisMessage") });
-    else if (answerB.length < MIN_LENGTH)
+    else if (!validateInput(sanitizedAnswerB, ANSWER_MAX, MIN_LENGTH))
       errs.answerB = t("minLength", {
         field: t("hisMessage"),
         min: MIN_LENGTH,
       });
-    else if (answerB.length > ANSWER_MAX)
-      errs.answerB = t("maxLength", {
-        field: t("hisMessage"),
-        max: ANSWER_MAX,
-      });
+
+    // Validate debate type
+    if (!isValidDebateType(selectedType)) {
+      errs.question = "Invalid debate type selected";
+    }
+
     return errs;
   };
 
@@ -373,11 +444,30 @@ const App: React.FC = () => {
     e.preventDefault();
     setSaveStatus(null);
     setSaveError(null);
+
+    // Check daily limit before proceeding
+    if (!checkDailyLimit()) {
+      setResult(
+        t(
+          "dailyLimitExceeded",
+          "Daily limit reached. You've used all 15 free debates today. Please try again tomorrow! Or contact me on contact button"
+        )
+      );
+      setLoading(false);
+      // Track daily limit exceeded
+      logEvent(analytics, "daily_limit_exceeded", {
+        user_type: selectedType,
+        language: i18n.language,
+      });
+      return;
+    }
+
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
     setLoading(true);
     setResult(null);
+
     try {
       const response = await fetch(
         "https://savedebate-srwl4n57ga-uc.a.run.app",
@@ -385,9 +475,9 @@ const App: React.FC = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            question,
-            // answerA,
-            answerB,
+            question: sanitizeInput(question),
+            answerA: sanitizeInput(answerA),
+            answerB: sanitizeInput(answerB),
             type: selectedType,
           }),
         }
@@ -401,6 +491,16 @@ const App: React.FC = () => {
         setSaveStatus("success");
         setSaveError(null);
         setResult(data.verdict || t("resultPlaceholder"));
+        // Increment usage only on successful submission
+        incrementUsage();
+        // Track successful submission
+        logEvent(analytics, "debate_submitted", {
+          user_type: selectedType,
+          language: i18n.language,
+          question_length: question.length,
+          answer_a_length: answerA.length,
+          answer_b_length: answerB.length,
+        });
         // Scroll to result
         setTimeout(() => {
           resultRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -420,6 +520,11 @@ const App: React.FC = () => {
     setAnswerB("");
     setResult(null);
     setErrors({});
+    // Track form clear
+    logEvent(analytics, "form_cleared", {
+      user_type: selectedType,
+      language: i18n.language,
+    });
   };
 
   return (
@@ -431,6 +536,7 @@ const App: React.FC = () => {
             element={
               <MainApp
                 t={t}
+                i18n={i18n}
                 question={question}
                 setQuestion={setQuestion}
                 answerA={answerA}
