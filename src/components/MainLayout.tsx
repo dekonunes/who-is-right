@@ -1,40 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Tooltip from "./Tooltip";
 import iconHappy from "../assets/icon-happy.png";
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
   const lang =
     i18n.language === "pt-BR" ? "pt-BR" : i18n.language === "es" ? "es" : "en";
-  const [showTooltip, setShowTooltip] = useState(false);
-  const howItWorksRef = useRef<HTMLButtonElement>(null);
-  const tooltipText = t("tooltip", { ns: "tooltip" });
-
-  // Close tooltip on outside click or Escape
-  useEffect(() => {
-    if (!showTooltip) return;
-    function handleClick(e: MouseEvent) {
-      if (
-        howItWorksRef.current &&
-        !howItWorksRef.current.contains(e.target as Node)
-      ) {
-        setShowTooltip(false);
-      }
-    }
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setShowTooltip(false);
-    }
-    document.addEventListener("mousedown", handleClick);
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleKey);
-    };
-  }, [showTooltip]);
 
   const navLinks = [
-    { label: t("howItWorks"), href: "#" },
+    { label: t("howItWorks"), href: "/how-it-works" },
     { label: t("contact"), href: "#" },
   ];
 
@@ -59,40 +33,15 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
           <div className="flex justify-end gap-8 items-center">
             <div className="flex items-center gap-9">
-              {navLinks.map((link) =>
-                link.label === t("howItWorks") ? (
-                  <div key={link.label} className="relative flex items-center">
-                    <button
-                      ref={howItWorksRef}
-                      type="button"
-                      className="text-white text-sm font-medium leading-normal whitespace-nowrap hover:underline focus:outline-none"
-                      onClick={() => setShowTooltip((v) => !v)}
-                      aria-expanded={showTooltip}
-                      aria-controls="how-it-works-tooltip"
-                    >
-                      {link.label}
-                    </button>
-                    <Tooltip
-                      anchorRef={howItWorksRef as React.RefObject<HTMLElement>}
-                      open={showTooltip}
-                      position="bottom"
-                      className=""
-                    >
-                      {tooltipText.split("\n").map((line, idx) => (
-                        <div key={idx}>{line}</div>
-                      ))}
-                    </Tooltip>
-                  </div>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="text-white text-sm font-medium leading-normal whitespace-nowrap hover:underline"
-                  >
-                    {link.label}
-                  </a>
-                )
-              )}
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-white text-sm font-medium leading-normal whitespace-nowrap hover:underline"
+                >
+                  {link.label}
+                </a>
+              ))}
             </div>
             <select
               value={lang}
@@ -110,7 +59,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
         </header>
         {/* Improved responsive main content wrapper for mobile and desktop */}
-        <main className="w-full min-h-screen bg-[#131c20] px-4 py-1">
+        <main className="w-full min-h-screen bg-[#131c20] px-4 py-5">
           {children}
         </main>
       </div>

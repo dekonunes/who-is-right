@@ -56,7 +56,7 @@ const QuestionInput: React.FC<Props> = ({
         placeholder={t("questionPlaceholder")}
         value={value}
         onChange={onChange}
-        maxLength={maxLength + 20} // allow a little overflow for error
+        maxLength={maxLength}
         error={!!error || overLimit}
       />
       <Count error={overLimit}>
