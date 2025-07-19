@@ -6,7 +6,27 @@ const HowItWorks: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto md:px-4 px-2 md:py-8 py-2 relative">
+      <Link
+        to="/"
+        className="absolute top-4 right-4 md:top-8 md:right-8 text-white hover:text-[#add6ea] transition-colors z-10"
+        aria-label="Close"
+      >
+        <svg
+          className="w-8 h-8"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </Link>
       <div className="bg-[#293a42] rounded-xl md:p-8 p-4 text-white">
         <h1 className="md:text-3xl text-2xl font-bold mb-6 text-center">
           {t("howItWorksTitle", "How It Works")}

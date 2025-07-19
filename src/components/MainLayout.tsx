@@ -6,6 +6,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
   const lang =
     i18n.language === "pt-BR" ? "pt-BR" : i18n.language === "es" ? "es" : "en";
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
     { label: t("howItWorks"), href: "/how-it-works" },
@@ -31,7 +32,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               Who Is Right?
             </h2>
           </div>
-          <div className="flex justify-end gap-8 items-center">
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex justify-end gap-8 items-center">
             <div className="flex items-center gap-9">
               {navLinks.map((link) => (
                 <a
@@ -57,7 +60,70 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <option value="es">Español</option>
             </select>
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <div className="md:hidden flex items-center gap-4">
+            <select
+              value={lang}
+              onChange={(e) => {
+                i18n.changeLanguage(e.target.value);
+                localStorage.setItem("appLang", e.target.value);
+              }}
+              aria-label="Select language"
+              className="bg-[#293a42] text-white rounded-full px-3 py-1 text-sm font-semibold border-none focus:outline-none focus:ring-2 focus:ring-[#add6ea] whitespace-nowrap"
+            >
+              <option value="en">EN</option>
+              <option value="pt-BR">PT</option>
+              <option value="es">ES</option>
+            </select>
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-white p-2 focus:outline-none"
+              aria-label="Toggle mobile menu"
+            >
+              <div className="w-6 h-6 flex flex-col justify-center items-center">
+                <span
+                  className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                    isMobileMenuOpen
+                      ? "rotate-45 translate-y-1"
+                      : "-translate-y-1"
+                  }`}
+                ></span>
+                <span
+                  className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                    isMobileMenuOpen ? "opacity-0" : "opacity-100"
+                  }`}
+                ></span>
+                <span
+                  className={`block w-5 h-0.5 bg-white transition-all duration-300 ${
+                    isMobileMenuOpen
+                      ? "-rotate-45 -translate-y-1"
+                      : "translate-y-1"
+                  }`}
+                ></span>
+              </div>
+            </button>
+          </div>
         </header>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-[#293a42] border-b border-[#1e2a30]">
+            <div className="px-4 py-3 space-y-3">
+              {navLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="block text-white text-base font-medium py-2 hover:text-[#add6ea] transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Improved responsive main content wrapper for mobile and desktop */}
         <main className="w-full min-h-screen bg-[#131c20] px-4 py-5">
           {children}
