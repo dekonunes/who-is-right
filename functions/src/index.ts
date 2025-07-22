@@ -23,6 +23,7 @@ type DebateRequest = {
   answerA: string;
   answerB: string;
   type: string;
+  language: string;
 };
 
 // Initialize Gemini with your API key (store securely, e.g., in environment config)
@@ -30,26 +31,145 @@ const genAI = new GoogleGenerativeAI(
   process.env.GEMINI_API_KEY || functions.config().gemini.api_key
 );
 
-export const getGeminiVerdict = async (
-  question: string,
-  answerA: string,
-  answerB: string,
-  type: string
-) => {
+// Translation mappings for different speakers and languages
+const SPEAKER_TRANSLATIONS: Record<string, Record<string, string>> = {
+  en: {
+    Woman: "Woman",
+    Man: "Man",
+    Mon: "Mom",
+    Child: "Child",
+    Sibling1: "Sibling 1",
+    Sibling2: "Sibling 2",
+    "Friend 1": "Friend 1",
+    "Friend 2": "Friend 2",
+    "Co-worker 1": "Co-worker 1",
+    "Co-worker 2": "Co-worker 2",
+    Boss: "Boss",
+    Employee: "Employee",
+  },
+  pt: {
+    Woman: "Mulher",
+    Man: "Homem",
+    Mon: "Mãe",
+    Child: "Filho",
+    Sibling1: "Irmão 1",
+    Sibling2: "Irmão 2",
+    "Friend 1": "Amigo 1",
+    "Friend 2": "Amigo 2",
+    "Co-worker 1": "Colega 1",
+    "Co-worker 2": "Colega 2",
+    Boss: "Chefe",
+    Employee: "Funcionário",
+  },
+  es: {
+    Woman: "Mujer",
+    Man: "Hombre",
+    Mon: "Madre",
+    Child: "Hijo",
+    Sibling1: "Hermano 1",
+    Sibling2: "Hermano 2",
+    "Friend 1": "Amigo 1",
+    "Friend 2": "Amigo 2",
+    "Co-worker 1": "Compañero 1",
+    "Co-worker 2": "Compañero 2",
+    Boss: "Jefe",
+    Employee: "Empleado",
+  },
+};
+
+/**
+ * Translates speaker names based on the specified language
+ * @param speaker - The speaker name to translate
+ * @param language - The target language code (en, pt, es)
+ * @returns The translated speaker name or the original if not found
+ */
+const translateSpeaker = (speaker: string, language: string): string => {
+  // Return original if language is English or invalid
+  if (language === "en" || !SPEAKER_TRANSLATIONS[language]) {
+    return speaker;
+  }
+
+  // Return translated version or original if not found
+  return SPEAKER_TRANSLATIONS[language][speaker] || speaker;
+};
+
+export const getGeminiVerdict = async ({
+  question,
+  answerA,
+  answerB,
+  type,
+  language,
+}: {
+  question: string;
+  answerA: string;
+  answerB: string;
+  type: string;
+  language: string;
+}) => {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
+  const promptPart1 = `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually a`;
+  const promptPart2 = `The user will provide a situation, and each person’s side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.`;
+  const endPart = `\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.`;
   const prompts = {
-    couple: `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually a couple. The user will provide a situation, and each person’s side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n- You can say the woman is right, the man is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with dinner."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- woman: string (her version)\n- man: string (his version)\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.
-\nsituation: ${question}\nwoman: ${answerA}\nman: ${answerB}`,
-    friends: `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually friends. The user will provide a situation, and each person’s side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n- You can say the Friend 1 is right, the Friend 2 is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with your next argument."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Friend 1: string (version)\n- Friend 2: string (version)\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.
-\nsituation: ${question}\nFriend 1: ${answerA}\nFriend 2: ${answerB}`,
-    mom_and_child: `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually a mom and child. The user will provide a situation, and each person’s side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n- You can say the Mon is right, the Child is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with the next allowance."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Mon: string (her version)\n- Child: string (his version)\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.
-\nsituation: ${question}\nmon: ${answerA}\nchild: ${answerB}`,
-    siblings: `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually siblings. The user will provide a situation, and each person’s side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n- You can say the Simbling 1 is right, the Simbling 2 is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with pillow fight."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Sibling 1: string (her version)\n- Sibling 2: string (his version)\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.
-\nsituation: ${question}\nsibling 1: ${answerA}\nsibling 2: ${answerB}`,
-    co_workers: `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually co-workers. The user will provide a situation, and each person’s side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n- You can say the Co-worker 1 is right, the Co-worker 2 is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with Lunchbox."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Boss: string (her version)\n- Employee: string (his version)\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.
-\nsituation: ${question}\nco-worker 1: ${answerA}\nco-worker 2: ${answerB}`,
-    boss_and_employee: `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually boss and employee. The user will provide a situation, and each person’s side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n- You can say the Boss is right, the Employee is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with your salary raises."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Boss: string (her version)\n- Employee: string (his version)\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.
-\nsituation: ${question}\nboss: ${answerA}\nemployee: ${answerB}`,
+    couple: `${promptPart1} couple. ${promptPart2}\n- You can say the ${translateSpeaker(
+      "Woman",
+      language
+    )} is right, the ${translateSpeaker(
+      "Man",
+      language
+    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with dinner."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- woman: string (her version)\n- man: string (his version)${endPart}
+\nsituation: ${question}\n${translateSpeaker(
+      "Woman",
+      language
+    )}: ${answerA}\n${translateSpeaker("Man", language)}: ${answerB}`,
+
+    friends: `${promptPart1} friends. ${promptPart2}\n- You can say the ${translateSpeaker(
+      "Friend 1",
+      language
+    )} is right, the ${translateSpeaker(
+      "Friend 2",
+      language
+    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with your next argument."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Friend 1: string (version)\n- Friend 2: string (version)${endPart}
+\nsituation: ${question}\n${translateSpeaker(
+      "Friend 1",
+      language
+    )}: ${answerA}\n${translateSpeaker("Friend 2", language)}: ${answerB}`,
+
+    mom_and_child: `${promptPart1} mom and child. ${promptPart2}\n- You can say the ${translateSpeaker(
+      "Mon",
+      language
+    )} is right, the ${translateSpeaker(
+      "Child",
+      language
+    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with the next allowance."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Mon: string (her version)\n- Child: string (his version)${endPart}
+\nsituation: ${question}\n${translateSpeaker(
+      "Mon",
+      language
+    )}: ${answerA}\n${translateSpeaker("Child", language)}: ${answerB}`,
+
+    siblings: `${promptPart1} siblings. ${promptPart2}\n- You can say the ${translateSpeaker(
+      "Sibling 1",
+      language
+    )} is right, the ${translateSpeaker(
+      "Sibling 2",
+      language
+    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with the next allowance."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Simbling 1: string (her version)\n- Simbling 2: string (his version)${endPart}
+\nsituation: ${question}\n${translateSpeaker(
+      "Sibling 1",
+      language
+    )}: ${answerA}\n${translateSpeaker("Sibling 2", language)}: ${answerB}`,
+
+    boss_and_employee: `${promptPart1} boss and employee.${promptPart2}\n- You can say the ${translateSpeaker(
+      "Boss",
+      language
+    )} is right, the ${translateSpeaker(
+      "Employee",
+      language
+    )} is right, neither is right — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with your salary raises."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Boss: string (her version)\n- Employee: string (his version)${endPart}
+\nsituation: ${question}\n${translateSpeaker(
+      "Boss",
+      language
+    )}: ${answerA}\n${translateSpeaker("Employee", language)}: ${answerB}`,
   };
   const userPrompt = {
     role: "user",
@@ -71,6 +191,8 @@ export const saveDebate = onRequest(
       "http://localhost:5173",
       "https://who-is-right-f795b.web.app",
       "https://who-is-right-f795b.firebaseapp.com",
+      "https://whoisright.app",
+      "https://www.whoisright.app",
     ],
   },
   async (req: any, res: any) => {
@@ -89,20 +211,33 @@ export const saveDebate = onRequest(
       return;
     }
     console.log("Request body:", req.body);
-    const { question, answerA, answerB, type } = req.body as DebateRequest;
+    const {
+      question,
+      answerA,
+      answerB,
+      type,
+      language = "en",
+    } = req.body as DebateRequest;
     if (!question || !answerA || !answerB) {
       console.error("Missing required fields", {
         question,
         answerA,
         answerB,
         type,
+        language,
       });
       res.status(400).send({ error: "Missing required fields" });
       return;
     }
     try {
       // Get the Gemini verdict
-      const verdict = await getGeminiVerdict(question, answerA, answerB, type);
+      const verdict = await getGeminiVerdict({
+        question,
+        answerA,
+        answerB,
+        type,
+        language,
+      });
       // Save the debate with the verdict
       const docRef = await db.collection("debates").add({
         question,

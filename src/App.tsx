@@ -164,9 +164,15 @@ const MainApp: React.FC<MainAppProps> = ({
   ANSWER_MAX,
 }) => (
   <div className="layout-content-container flex flex-col max-w-[960px] flex-1 mx-auto w-full">
-    <h2 className="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-3">
+    <h2 className="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-2 pt-3">
       {t("appName", "Settle the score")}
     </h2>
+    <p className="text-gray-300 text-sm text-center px-4 pb-4">
+      {t(
+        "appDescription",
+        "Get AI-powered analysis to settle any argument or debate"
+      )}
+    </p>
     {/* User type selection buttons */}
     <div className="flex flex-row flex-wrap gap-3 justify-center mb-6">
       {userTypes.map((typeObj) => (
@@ -479,6 +485,7 @@ const App: React.FC = () => {
             answerA: sanitizeInput(answerA),
             answerB: sanitizeInput(answerB),
             type: selectedType,
+            language: i18n.language,
           }),
         }
       );

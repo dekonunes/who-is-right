@@ -1,5 +1,6 @@
 {
   "appName": "Who Is Right?",
+  "appDescription": "Let AI decide who is right between you and someone else",
   "questionLabel": "What's the argument about?",
   "questionPlaceholder": "Enter the situation...",
   "herMessage": "What she thinks about it...",
