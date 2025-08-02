@@ -81,5 +81,9 @@
   "saveSuccess": "Debate salvo com sucesso!",
   "saveError": "Falha ao salvar debate",
   "dailyLimitExceeded": "Limite diário atingido. Você usou todos os 15 debates gratuitos hoje. Tente novamente amanhã! Ou contate-me no botão de contato",
-  "remainingUses": "{{count}} debates restantes hoje"
+  "remainingUses": "{{count}} debates restantes hoje",
+  "recommendedBooks": "Livros Recomendados para Melhores Relacionamentos",
+  "bookDescription": "Esses livros podem ajudar você a melhorar a comunicação e resolver conflitos de forma mais eficaz.",
+  "viewOnAmazon": "Encontrar na Amazon",
+  "affiliateDisclosure": "Como Associado da Amazon, eu ganho com compras qualificadas."
 }

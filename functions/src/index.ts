@@ -108,10 +108,11 @@ export const getGeminiVerdict = async ({
 }) => {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
   const promptPart1 = `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually a`;
-  const promptPart2 = `The user will provide a situation, and each person’s side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.`;
+  const promptPart2 = `The user will provide a situation, and each person's side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n\n`;
+  const promptPart3 = `**CRITICAL: You MUST format your response using the following structure with **bold** section headers:**\n\n**Situation:** [Brief description of the argument/debate context]\n\n**[Person 1 Name]:** [First person's perspective and reasoning]\n\n**[Person 2 Name]:** [Second person's perspective and reasoning]\n\n**The Verdict:** [Your analysis and conclusion on who is right, with humorous reasoning]`;
   const endPart = `\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.`;
   const prompts = {
-    couple: `${promptPart1} couple. ${promptPart2}\n- You can say the ${translateSpeaker(
+    couple: `${promptPart1} couple. ${promptPart2}${promptPart3}\n- You can say the ${translateSpeaker(
       "Woman",
       language
     )} is right, the ${translateSpeaker(
@@ -123,7 +124,7 @@ export const getGeminiVerdict = async ({
       language
     )}: ${answerA}\n${translateSpeaker("Man", language)}: ${answerB}`,
 
-    friends: `${promptPart1} friends. ${promptPart2}\n- You can say the ${translateSpeaker(
+    friends: `${promptPart1} friends. ${promptPart2}${promptPart3}\n- You can say the ${translateSpeaker(
       "Friend 1",
       language
     )} is right, the ${translateSpeaker(
@@ -135,7 +136,7 @@ export const getGeminiVerdict = async ({
       language
     )}: ${answerA}\n${translateSpeaker("Friend 2", language)}: ${answerB}`,
 
-    mom_and_child: `${promptPart1} mom and child. ${promptPart2}\n- You can say the ${translateSpeaker(
+    mom_and_child: `${promptPart1} mom and child. ${promptPart2}${promptPart3}\n- You can say the ${translateSpeaker(
       "Mon",
       language
     )} is right, the ${translateSpeaker(
@@ -147,7 +148,7 @@ export const getGeminiVerdict = async ({
       language
     )}: ${answerA}\n${translateSpeaker("Child", language)}: ${answerB}`,
 
-    siblings: `${promptPart1} siblings. ${promptPart2}\n- You can say the ${translateSpeaker(
+    siblings: `${promptPart1} siblings. ${promptPart2}${promptPart3}\n- You can say the ${translateSpeaker(
       "Sibling 1",
       language
     )} is right, the ${translateSpeaker(
@@ -159,7 +160,7 @@ export const getGeminiVerdict = async ({
       language
     )}: ${answerA}\n${translateSpeaker("Sibling 2", language)}: ${answerB}`,
 
-    boss_and_employee: `${promptPart1} boss and employee.${promptPart2}\n- You can say the ${translateSpeaker(
+    boss_and_employee: `${promptPart1} boss and employee.${promptPart2}${promptPart3}\n- You can say the ${translateSpeaker(
       "Boss",
       language
     )} is right, the ${translateSpeaker(

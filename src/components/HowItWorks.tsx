@@ -1,9 +1,20 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "../firebase";
 
 const HowItWorks: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  // Track How It Works page view
+  useEffect(() => {
+    logEvent(analytics, "page_view", {
+      page_title: "How It Works",
+      page_location: window.location.href,
+      language: i18n.language,
+    });
+  }, [i18n.language]);
 
   return (
     <div className="max-w-4xl mx-auto md:px-4 px-2 md:py-8 py-2 relative">

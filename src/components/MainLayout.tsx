@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { logEvent } from "firebase/analytics";
+import { analytics } from "../firebase";
 import iconHappy from "../assets/icon-happy.png";
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -44,6 +46,15 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   key={link.label}
                   href={link.href}
                   className="text-white text-sm font-medium leading-normal whitespace-nowrap hover:underline"
+                  onClick={() => {
+                    // Track navigation link clicks
+                    logEvent(analytics, "navigation_clicked", {
+                      link_text: link.label,
+                      link_href: link.href,
+                      language: i18n.language,
+                      device: "desktop",
+                    });
+                  }}
                 >
                   {link.label}
                 </a>
@@ -52,8 +63,16 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <select
               value={lang}
               onChange={(e) => {
-                i18n.changeLanguage(e.target.value);
-                localStorage.setItem("appLang", e.target.value);
+                const newLanguage = e.target.value;
+                i18n.changeLanguage(newLanguage);
+                localStorage.setItem("appLang", newLanguage);
+
+                // Track language change
+                logEvent(analytics, "language_changed", {
+                  previous_language: i18n.language,
+                  new_language: newLanguage,
+                  page_location: window.location.href,
+                });
               }}
               aria-label="Select language"
               className="ml-4 bg-[#293a42] text-white rounded-full px-4 py-2 text-sm font-semibold border-none focus:outline-none focus:ring-2 focus:ring-[#add6ea] whitespace-nowrap"
@@ -69,8 +88,17 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             <select
               value={lang}
               onChange={(e) => {
-                i18n.changeLanguage(e.target.value);
-                localStorage.setItem("appLang", e.target.value);
+                const newLanguage = e.target.value;
+                i18n.changeLanguage(newLanguage);
+                localStorage.setItem("appLang", newLanguage);
+
+                // Track language change
+                logEvent(analytics, "language_changed", {
+                  previous_language: i18n.language,
+                  new_language: newLanguage,
+                  page_location: window.location.href,
+                  device: "mobile",
+                });
               }}
               aria-label="Select language"
               className="bg-[#293a42] text-white rounded-full px-3 py-1 text-sm font-semibold border-none focus:outline-none focus:ring-2 focus:ring-[#add6ea] whitespace-nowrap"
@@ -80,7 +108,15 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <option value="es">ES</option>
             </select>
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() => {
+                const newState = !isMobileMenuOpen;
+                setIsMobileMenuOpen(newState);
+                // Track mobile menu toggle
+                logEvent(analytics, "mobile_menu_toggled", {
+                  menu_state: newState ? "opened" : "closed",
+                  language: i18n.language,
+                });
+              }}
               className="text-white p-2 focus:outline-none"
               aria-label="Toggle mobile menu"
             >
@@ -118,7 +154,16 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   key={link.label}
                   href={link.href}
                   className="block text-white text-base font-medium py-2 hover:text-[#add6ea] transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    // Track mobile navigation link clicks
+                    logEvent(analytics, "navigation_clicked", {
+                      link_text: link.label,
+                      link_href: link.href,
+                      language: i18n.language,
+                      device: "mobile",
+                    });
+                  }}
                 >
                   {link.label}
                 </a>

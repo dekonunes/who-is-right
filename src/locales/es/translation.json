@@ -81,5 +81,9 @@
   "saveSuccess": "¡Debate guardado exitosamente!",
   "saveError": "Error al guardar debate",
   "dailyLimitExceeded": "Límite diario alcanzado. Has usado todos los 15 debates gratuitos hoy. ¡Inténtalo de nuevo mañana! O contacta conmigo en el botón de contacto",
-  "remainingUses": "{{count}} debates restantes hoy"
+  "remainingUses": "{{count}} debates restantes hoy",
+  "recommendedBooks": "Libros Recomendados para Mejores Relaciones",
+  "bookDescription": "Estos libros pueden ayudarte a mejorar la comunicación y resolver conflictos de manera más efectiva.",
+  "viewOnAmazon": "Encontrar en Amazon",
+  "affiliateDisclosure": "Como un Afiliado de Amazon, gano por compras elegibles"
 }

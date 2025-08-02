@@ -80,5 +80,21 @@
   "saveSuccess": "Debate saved successfully!",
   "saveError": "Failed to save debate",
   "dailyLimitExceeded": "Daily limit reached. You've used all 15 free debates today. Please try again tomorrow! Or contact me on contact button",
-  "remainingUses": "{{count}} debates remaining today"
+  "remainingUses": "{{count}} debates remaining today",
+  "blogSectionTitle": "Relationship Insights & Tips",
+  "blogSectionDescription": "Discover expert advice on communication, conflict resolution, and building stronger relationships.",
+  "blogTitle1": "How to Have Better Arguments in Relationships",
+  "blogExcerpt1": "Learn the art of constructive disagreement and how to turn arguments into opportunities for growth in your relationship.",
+  "blogTitle2": "The Psychology Behind Why We Argue",
+  "blogExcerpt2": "Understanding the science behind arguments can help you communicate more effectively and resolve conflicts peacefully.",
+  "blogTitle3": "5 Communication Tips for Couples",
+  "blogExcerpt3": "Simple but powerful communication strategies that can transform how you and your partner handle disagreements.",
+  "blogTitle4": "When to Agree to Disagree",
+  "blogExcerpt4": "Sometimes the best solution is to accept that you have different perspectives. Here's how to do it gracefully.",
+  "readMore": "Read More",
+  "viewAllArticles": "View All Articles",
+  "recommendedBooks": "Recommended Items for Better Relationships",
+  "bookDescription": "These books can help you improve communication and resolve conflicts more effectively.",
+  "viewOnAmazon": "Find on Amazon",
+  "affiliateDisclosure": "As an Amazon Associate I earn from qualifying purchases."
 }
