@@ -5,7 +5,7 @@ import { analytics } from "./firebase";
 import MainLayout from "./components/MainLayout";
 import ResultDisplay from "./components/ResultDisplay";
 import HowItWorks from "./components/HowItWorks";
-import AdBox from "./components/AdBox";
+import AmazonRecommendations from "./components/AmazonRecommendations";
 import { useTranslation } from "react-i18next";
 import {
   sanitizeInput,
@@ -14,6 +14,16 @@ import {
 } from "./utils/security";
 import womanImg from "./assets/woman.png";
 import manImg from "./assets/man.png";
+import kidImg from "./assets/kid_final.png";
+import momImg from "./assets/mom_no_bg.png";
+import simbling1Img from "./assets/simbling1_final.png";
+import simbling2Img from "./assets/simbling2_no_bg.png";
+import bossImg from "./assets/boss_final.png";
+import employeeImg from "./assets/employee_final.png";
+import friend1Img from "./assets/friend1_final.png";
+import friend2Img from "./assets/friend2_final.png";
+import coWorker1Img from "./assets/co-worker1_final.png";
+import coWorker2Img from "./assets/co-worker2_final.png";
 
 const QUESTION_MAX = 500;
 const ANSWER_MAX = 300;
@@ -66,6 +76,8 @@ const userTypes = [
     answerBLabel: "What he thinks",
     answerAPlaceholder: "Write her side of the story...",
     answerBPlaceholder: "Write his side of the story...",
+    imageA: womanImg,
+    imageB: manImg,
   },
   {
     key: "friends",
@@ -74,6 +86,8 @@ const userTypes = [
     answerBLabel: "Friend B's opinion",
     answerAPlaceholder: "Write Friend A's side...",
     answerBPlaceholder: "Write Friend B's side...",
+    imageA: friend1Img,
+    imageB: friend2Img,
   },
   {
     key: "mom_and_child",
@@ -82,6 +96,8 @@ const userTypes = [
     answerBLabel: "Child's view",
     answerAPlaceholder: "Write Mom's side...",
     answerBPlaceholder: "Write Child's side...",
+    imageA: momImg,
+    imageB: kidImg,
   },
   {
     key: "siblings",
@@ -90,6 +106,8 @@ const userTypes = [
     answerBLabel: "Sibling B's view",
     answerAPlaceholder: "Write Sibling A's side...",
     answerBPlaceholder: "Write Sibling B's side...",
+    imageA: simbling1Img,
+    imageB: simbling2Img,
   },
   {
     key: "co_workers",
@@ -98,6 +116,8 @@ const userTypes = [
     answerBLabel: "Co-worker B's view",
     answerAPlaceholder: "Write Co-worker A's side...",
     answerBPlaceholder: "Write Co-worker B's side...",
+    imageA: coWorker1Img,
+    imageB: coWorker2Img,
   },
   {
     key: "boss_and_employee",
@@ -106,6 +126,8 @@ const userTypes = [
     answerBLabel: "Employee's view",
     answerAPlaceholder: "Write Boss's side...",
     answerBPlaceholder: "Write Employee's side...",
+    imageA: bossImg,
+    imageB: employeeImg,
   },
 ];
 
@@ -153,6 +175,7 @@ const MainApp: React.FC<MainAppProps> = ({
   saveError,
   selectedType,
   setSelectedType,
+  selectedTypeObj,
   answerALabel,
   answerBLabel,
   answerAPlaceholder,
@@ -232,7 +255,7 @@ const MainApp: React.FC<MainAppProps> = ({
     </h2>
     <div className="flex flex-wrap items-center gap-4 px-4 py-2">
       <img
-        src={womanImg}
+        src={selectedTypeObj.imageA}
         alt={t("herMessage", "Her avatar")}
         className="w-24 h-24 object-contain mr-3 md:w-48 md:h-48"
       />
@@ -295,7 +318,7 @@ const MainApp: React.FC<MainAppProps> = ({
         )}
       </div>
       <img
-        src={manImg}
+        src={selectedTypeObj.imageB}
         alt={t("hisMessage", "His avatar")}
         className="w-24 h-24 object-contain mr-3 md:w-48 md:h-48"
       />
@@ -317,40 +340,68 @@ const MainApp: React.FC<MainAppProps> = ({
         {t("clear", "Clear")}
       </button>
     </div>
-    {saveStatus && (
-      <div className="px-4 py-2">
-        {saveStatus === "success" ? (
-          <div className="text-green-400 text-sm">
-            {t("saveSuccess", "Debate saved successfully!")}
-          </div>
-        ) : (
-          <div className="text-red-400 text-sm">
-            {saveError || t("saveError", "Failed to save debate")}
-          </div>
-        )}
-      </div>
-    )}
     {(result || loading) && <ResultDisplay result={result} loading={loading} />}
-    {/* Ad after result */}
-    {result && (
-      <div className="px-4 py-6">
-        <AdBox adSlot="YOUR_AD_SLOT_ID" className="max-w-4xl mx-auto" />
-      </div>
-    )}
+
     <div ref={resultRef} />
+
+    {/* Amazon Recommendations */}
+    <AmazonRecommendations selectedType={selectedType} />
   </div>
 );
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
 
-  // Track page view on app load
+  // Track page view and user engagement on app load
   useEffect(() => {
+    const startTime = Date.now();
+
     logEvent(analytics, "page_view", {
       page_title: "Who is Right?",
       page_location: window.location.href,
       language: i18n.language,
     });
+
+    // Track scroll depth
+    const handleScroll = () => {
+      const scrollDepth = Math.round(
+        (window.scrollY / (document.body.scrollHeight - window.innerHeight)) *
+          100
+      );
+      if (scrollDepth > 25 && scrollDepth <= 50) {
+        logEvent(analytics, "scroll_depth", {
+          depth_percentage: 25,
+          language: i18n.language,
+        });
+      } else if (scrollDepth > 50 && scrollDepth <= 75) {
+        logEvent(analytics, "scroll_depth", {
+          depth_percentage: 50,
+          language: i18n.language,
+        });
+      } else if (scrollDepth > 75) {
+        logEvent(analytics, "scroll_depth", {
+          depth_percentage: 75,
+          language: i18n.language,
+        });
+      }
+    };
+
+    // Track time spent on page
+    const handleBeforeUnload = () => {
+      const timeSpent = Math.round((Date.now() - startTime) / 1000);
+      logEvent(analytics, "time_spent", {
+        time_seconds: timeSpent,
+        language: i18n.language,
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
   }, [i18n.language]);
   const [question, setQuestion] = useState("");
   const [answerA, setAnswerA] = useState("");
@@ -470,7 +521,18 @@ const App: React.FC = () => {
 
     const errs = validate();
     setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
+    if (Object.keys(errs).length > 0) {
+      // Track validation errors
+      logEvent(analytics, "validation_error", {
+        error_fields: Object.keys(errs),
+        user_type: selectedType,
+        language: i18n.language,
+        question_length: question.length,
+        answer_a_length: answerA.length,
+        answer_b_length: answerB.length,
+      });
+      return;
+    }
     setLoading(true);
     setResult(null);
 
@@ -493,6 +555,15 @@ const App: React.FC = () => {
         const data = await response.json().catch(() => ({}));
         setSaveStatus("error");
         setSaveError(data.error || "Failed to save debate");
+
+        // Track API error
+        logEvent(analytics, "api_error", {
+          error_type: "http_error",
+          status_code: response.status,
+          error_message: data.error || "Unknown error",
+          user_type: selectedType,
+          language: i18n.language,
+        });
       } else {
         const data = await response.json();
         setSaveStatus("success");
@@ -516,6 +587,14 @@ const App: React.FC = () => {
     } catch (err: any) {
       setSaveStatus("error");
       setSaveError(err.message || "Failed to save debate");
+
+      // Track network/other errors
+      logEvent(analytics, "api_error", {
+        error_type: "network_error",
+        error_message: err.message || "Unknown error",
+        user_type: selectedType,
+        language: i18n.language,
+      });
     } finally {
       setLoading(false);
     }
