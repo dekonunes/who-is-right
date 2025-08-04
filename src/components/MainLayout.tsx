@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../firebase";
-import iconHappy from "../assets/icon-happy.png";
+import iconHappy from "../assets/optimized/icon-happy.webp";
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
