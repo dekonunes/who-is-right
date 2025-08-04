@@ -118,7 +118,7 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Man",
       language
-    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with dinner."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- woman: string (her version)\n- man: string (his version)${endPart}
+    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Good luck with dinner."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- woman: string (her version)\n- man: string (his version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Woman",
       language
@@ -130,7 +130,7 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Friend 2",
       language
-    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with your next argument."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Friend 1: string (version)\n- Friend 2: string (version)${endPart}
+    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Good luck with your next argument."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Friend 1: string (version)\n- Friend 2: string (version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Friend 1",
       language
@@ -142,7 +142,7 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Child",
       language
-    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with the next allowance."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Mon: string (her version)\n- Child: string (his version)${endPart}
+    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Good luck with the next allowance."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Mon: string (her version)\n- Child: string (his version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Mon",
       language
@@ -154,7 +154,7 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Sibling 2",
       language
-    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with the next allowance."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Simbling 1: string (her version)\n- Simbling 2: string (his version)${endPart}
+    )} is right, neither is right, or that it's tie — but always in a joking, non-serious way.\n- End with a humorous touch like: "Good luck with the next allowance."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Simbling 1: string (her version)\n- Simbling 2: string (his version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Sibling 1",
       language
@@ -166,7 +166,7 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Employee",
       language
-    )} is right, neither is right — but always in a joking, non-serious way.\n- End with a humorous touch like: "Verdict delivered. Good luck with your salary raises."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Boss: string (her version)\n- Employee: string (his version)${endPart}
+    )} is right, neither is right — but always in a joking, non-serious way.\n- End with a humorous touch like: "Good luck with your salary raises."\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Boss: string (her version)\n- Employee: string (his version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Boss",
       language
