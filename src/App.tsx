@@ -12,18 +12,18 @@ import {
   validateInput,
   isValidDebateType,
 } from "./utils/security";
-import womanImg from "./assets/woman.png";
-import manImg from "./assets/man.png";
-import kidImg from "./assets/kid_final.png";
-import momImg from "./assets/mom_no_bg.png";
-import simbling1Img from "./assets/simbling1_final.png";
-import simbling2Img from "./assets/simbling2_no_bg.png";
-import bossImg from "./assets/boss_final.png";
-import employeeImg from "./assets/employee_final.png";
-import friend1Img from "./assets/friend1_final.png";
-import friend2Img from "./assets/friend2_final.png";
-import coWorker1Img from "./assets/co-worker1_final.png";
-import coWorker2Img from "./assets/co-worker2_final.png";
+import womanImg from "./assets/optimized/woman.webp";
+import manImg from "./assets/optimized/man.webp";
+import kidImg from "./assets/optimized/kid_final.webp";
+import momImg from "./assets/optimized/mom_no_bg.webp";
+import simbling1Img from "./assets/optimized/simbling1_final.webp";
+import simbling2Img from "./assets/optimized/simbling2_no_bg.webp";
+import bossImg from "./assets/optimized/boss_final.webp";
+import employeeImg from "./assets/optimized/employee_final.webp";
+import friend1Img from "./assets/optimized/friend1_final.webp";
+import friend2Img from "./assets/optimized/friend2_final.webp";
+import coWorker1Img from "./assets/optimized/co-worker1_final.webp";
+import coWorker2Img from "./assets/optimized/co-worker2_final.webp";
 
 const QUESTION_MAX = 500;
 const ANSWER_MAX = 300;
@@ -407,6 +407,16 @@ const App: React.FC = () => {
   const [answerA, setAnswerA] = useState("");
   const [answerB, setAnswerB] = useState("");
   const [result, setResult] = useState<string | null>(null);
+  // const [result, setResult] = useState<string | null>(
+  //   `OK. Vamos lá! **Situação:** A filha saiu do emprego dois meses antes do intercâmbio, e a mãe não está feliz. **Mon:** A mãe acha um absurdo porque a filha vai se atrasar muito, tem que ir ao médico, visitar a família e arrumar as coisas. **Child:** A filha acha completamente possível, porque durante a semana pode arrumar as coisas e ir ao médico, e nos finais de semana visitar quem ela quer. **O Veredicto:** Hum... Analisando as evidências... A filha parece ter uma agenda mais apertada que a de um malabarista em um vulcão! Mas, a mãe tem um ponto: as tarefas se acumulam como roupa suja em dia de chuva. Declaro: A mãe está meio certa, a filha está meio certa, e o tempo dirá quem vai ter mais dor de cabeça. Boa sorte com o próximo intercâmbio! "`
+  // );
+  // const [result, setResult] = useState<string | null>(
+  //   'Aqui está! **Situação:** Isac recebeu uma mensagem suspeita no relógio e Glau se irritou. **Glau:** Eu vi que Dhayane mandou "bom dia gatão" para o meu amor. Então comecei a bater no Isac, porque ele não pode flertar com outras. **Isac:** Glau tem que deixar de ser egoísta. Primeiro, nem era Dhayane, era Dhannyel, um cliente de uma plataforma que estou montando... apanhei à toa. **O Veredicto:** Hum... Parece que houve um pequeno mal-entendido. A mensagem "bom dia gatão" por si só é um pouco suspeita, mas o nome Dhannyel e a explicação do cliente... Isac, você se safou dessa vez. Glau, acho que você exagerou um pouquinho. Acredito que seja um empate técnico, mas Isac, fique esperto com esses "Dhannyels" por aí. Boa sorte com o jantar! "'
+  // );
+  // const [result, setResult] = useState<string | null>(
+  //   'Okay, entendi! Vamos lá para mais um julgamento divertido! **Situação:** Isac recebe uma mensagem suspeita e Glau reage. **Glau:** Eu vi que Dhayane mandou "bom dia gatão" para o meu amor. Comecei a bater no Isac, porque ele não pode flertar com outras! **Isac:** Glau tem que parar com essa paranoia! Primeiro, nem era Dhayane, era Dhannyel, um cliente da plataforma que estou montando... Levei umas boas porrada à toa. **O Veredicto:** A corte, após análise minuciosa, decide que... a Glau está "um pouquinho" errada. Afinal, parece que a Dhayane/Dhannyel era mais inofensivo que um filhote de hamster. Mas, Isac, use a sabedoria: da próxima vez, explique antes de a mensagem aparecer, para evitar as "homenagens" da Glau. Boa sorte com o jantar!'
+  // );
+
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{
     question?: string;

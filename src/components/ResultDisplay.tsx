@@ -85,13 +85,25 @@ const VerdictTitle = styled.h4`
   letter-spacing: 0.05em;
 `;
 
+const DefaultSection = styled.div`
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  padding: 1.25rem;
+  border-radius: 12px;
+  border-left: 5px solid #718096;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(113, 128, 150, 0.1);
+`;
+
 type Props = {
   result: string | null;
   loading?: boolean;
 };
 
 // Function to parse and structure the AI response
-const parseResult = (result: string) => {
+const parseResult = (
+  result: string,
+  createSection: (title: string, content: string) => JSX.Element
+) => {
   // Remove markdown code blocks if present
   let cleanedResult = result;
 
@@ -110,124 +122,22 @@ const parseResult = (result: string) => {
   // Remove any leading/trailing whitespace
   cleanedResult = cleanedResult.trim();
 
-  // Extract sections using HTML strong tags (converted from markdown)
-  const htmlSectionPattern =
-    /<strong>(.*?)<\/strong>:\s*([^<]+?)(?=<strong>|$)/g;
-  const sections: Array<{ title: string; content: string }> = [];
-  let match;
-
-  while ((match = htmlSectionPattern.exec(cleanedResult)) !== null) {
-    sections.push({
-      title: match[1].trim(),
-      content: match[2].trim(),
-    });
-  }
-  // If we found structured sections, render them
-  if (sections.length > 0) {
-    const structuredSections: JSX.Element[] = [];
-
-    sections.forEach((section, index) => {
-      const { title, content } = section;
-
-      switch (title.toLowerCase()) {
-        case "situation":
-          structuredSections.push(
-            <Section key={`situation-${index}`}>
-              <SectionTitle>Situation:</SectionTitle>
-              <SituationText>{content}</SituationText>
-            </Section>
-          );
-          break;
-        case "friend 1":
-        case "friend a":
-          structuredSections.push(
-            <Section key={`friend1-${index}`}>
-              <SectionTitle>Friend 1:</SectionTitle>
-              <FriendView>
-                <FriendLabel>Friend 1's View:</FriendLabel>
-                {content}
-              </FriendView>
-            </Section>
-          );
-          break;
-        case "friend 2":
-        case "friend b":
-          structuredSections.push(
-            <Section key={`friend2-${index}`}>
-              <SectionTitle>Friend 2:</SectionTitle>
-              <FriendView>
-                <FriendLabel>Friend 2's View:</FriendLabel>
-                {content}
-              </FriendView>
-            </Section>
-          );
-          break;
-        case "the verdict":
-        case "verdict":
-          structuredSections.push(
-            <Section key={`verdict-${index}`}>
-              <VerdictSection>
-                <VerdictTitle>The Verdict:</VerdictTitle>
-                {content}
-              </VerdictSection>
-            </Section>
-          );
-          break;
-        default:
-          // For any other sections, create a generic section
-          structuredSections.push(
-            <Section key={`${title}-${index}`}>
-              <SectionTitle>{title}:</SectionTitle>
-              <div>{content}</div>
-            </Section>
-          );
-      }
-    });
-
-    return structuredSections;
-  }
-
   // If no structured sections found, try to parse the text manually
   // Look for common patterns in the response
-  const lines = cleanedResult.split("\n").filter((line) => line.trim());
+  // Split by <strong> tags since there are no \n characters
+  const sections = cleanedResult
+    .split(/<strong>/)
+    .filter((section) => section.trim());
   const manualSections: JSX.Element[] = [];
 
-  let currentSection = "";
-  let currentContent = "";
-
-  for (const line of lines) {
-    // Check if this line looks like a section header (HTML tags after conversion)
-    if (
-      line.includes("<strong>") &&
-      line.includes("</strong>") &&
-      line.includes(":")
-    ) {
-      // Save previous section if exists
-      if (currentSection && currentContent) {
-        manualSections.push(
-          createSection(currentSection, currentContent.trim())
-        );
-      }
-
-      // Extract new section from HTML tags
-      const sectionMatch = line.match(/<strong>(.*?)<\/strong>:\s*(.*)/);
-      if (sectionMatch) {
-        currentSection = sectionMatch[1].trim();
-        currentContent = sectionMatch[2].trim();
-      }
-    } else {
-      // Add to current content
-      if (currentContent) {
-        currentContent += " " + line.trim();
-      } else {
-        currentContent = line.trim();
-      }
+  for (const section of sections) {
+    // Each section should start with the title and content
+    const sectionMatch = section.match(/(.*?):<\/strong>\s*(.*)/);
+    if (sectionMatch) {
+      const title = sectionMatch[1]?.trim();
+      const content = sectionMatch[2]?.trim();
+      manualSections.push(createSection(title, content));
     }
-  }
-
-  // Add the last section
-  if (currentSection && currentContent) {
-    manualSections.push(createSection(currentSection, currentContent.trim()));
   }
 
   // If we found manual sections, return them
@@ -245,65 +155,44 @@ const parseResult = (result: string) => {
   );
 };
 
-// Helper function to create sections
-const createSection = (title: string, content: string): JSX.Element => {
-  switch (title.toLowerCase()) {
-    case "situation":
-      return (
-        <Section key="situation">
-          <SectionTitle>Situation:</SectionTitle>
-          <SituationText>{content}</SituationText>
-        </Section>
-      );
-    case "friend 1":
-    case "friend a":
-      return (
-        <Section key="friend1">
-          <SectionTitle>Friend 1:</SectionTitle>
-          <FriendView>
-            <FriendLabel>Friend 1's View:</FriendLabel>
-            {content}
-          </FriendView>
-        </Section>
-      );
-    case "friend 2":
-    case "friend b":
-      return (
-        <Section key="friend2">
-          <SectionTitle>Friend 2:</SectionTitle>
-          <FriendView>
-            <FriendLabel>Friend 2's View:</FriendLabel>
-            {content}
-          </FriendView>
-        </Section>
-      );
-    case "the verdict":
-    case "verdict":
-      return (
-        <Section key="verdict">
-          <VerdictSection>
-            <VerdictTitle>The Verdict:</VerdictTitle>
-            {content}
-          </VerdictSection>
-        </Section>
-      );
-    default:
-      return (
-        <Section key={title}>
-          <SectionTitle>{title}:</SectionTitle>
-          <div>{content}</div>
-        </Section>
-      );
-  }
-};
-
 const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
   const { t } = useTranslation();
+
+  // Helper function to create sections
+  const createSection = (title: string, content: string): JSX.Element => {
+    switch (title.toLowerCase()) {
+      case "situation":
+      case "situação":
+        return (
+          <Section key="situation">
+            <SectionTitle>{t("situation")}:</SectionTitle>
+            <SituationText>{content}</SituationText>
+          </Section>
+        );
+      case "the verdict":
+      case "verdict":
+      case "o veredicto":
+      case "el veredicto":
+        return (
+          <Section key="verdict">
+            <SectionTitle>{t("theVerdict")}:</SectionTitle>
+            <VerdictSection>{content}</VerdictSection>
+          </Section>
+        );
+      default:
+        return (
+          <Section key={title}>
+            <SectionTitle>{t(title)}:</SectionTitle>
+            <DefaultSection>{content}</DefaultSection>
+          </Section>
+        );
+    }
+  };
 
   if (loading) return <Loading>{t("loading")}</Loading>;
   if (!result) return <ResultBox>{t("resultPlaceholder")}</ResultBox>;
 
-  return <ResultBox>{parseResult(result)}</ResultBox>;
+  return <ResultBox>{parseResult(result, createSection)}</ResultBox>;
 };
 
 export default ResultDisplay;
