@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../firebase";
 import { getBookRecommendations } from "../data/books";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface AmazonRecommendationsProps {
   selectedType: string;
@@ -12,6 +16,7 @@ const AmazonRecommendations: React.FC<AmazonRecommendationsProps> = ({
   selectedType,
 }) => {
   const { t, i18n } = useTranslation();
+  const cardsRef = useRef<HTMLDivElement>(null);
 
   const TRACKING_ID = "whoisright-20";
 
@@ -20,6 +25,24 @@ const AmazonRecommendations: React.FC<AmazonRecommendationsProps> = ({
     i18n.language,
     selectedType
   );
+
+  useLayoutEffect(() => {
+    if (!cardsRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from(cardsRef.current!.children, {
+        opacity: 0,
+        y: 16,
+        duration: 0.35,
+        stagger: 0.08,
+        ease: "power2.out",
+        scrollTrigger: {
+          trigger: cardsRef.current,
+          start: "top 85%",
+        },
+      });
+    }, cardsRef);
+    return () => ctx.revert();
+  }, []);
 
   return (
     <div className="bg-[#1a252f] py-8 px-4 rounded-xl mt-8">
@@ -34,7 +57,7 @@ const AmazonRecommendations: React.FC<AmazonRecommendationsProps> = ({
           )}
         </p>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div ref={cardsRef} className="grid md:grid-cols-2 gap-6">
           {bookRecommendations.map((book) => (
             <div
               key={book.id}

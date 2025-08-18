@@ -1,11 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../firebase";
 import iconHappy from "../assets/optimized/icon-happy.webp";
+import gsap from "gsap";
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
+  const headerRef = useRef<HTMLElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLDivElement>(null);
   const lang =
     i18n.language === "pt-BR" ? "pt-BR" : i18n.language === "es" ? "es" : "en";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -18,6 +22,42 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ];
 
+  useLayoutEffect(() => {
+    if (!headerRef.current) return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+
+      // Header slides down from top
+      tl.from(headerRef.current, {
+        y: -20,
+        opacity: 0,
+        duration: 0.4,
+      })
+        // Logo and title fade in
+        .from(
+          logoRef.current,
+          {
+            opacity: 0,
+            x: -12,
+            duration: 0.3,
+          },
+          "-=0.2"
+        )
+        // Navigation links stagger in
+        .from(
+          navRef.current?.children || [],
+          {
+            opacity: 0,
+            y: 8,
+            stagger: 0.08,
+            duration: 0.25,
+          },
+          "-=0.1"
+        );
+    }, headerRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
     <div
       className="relative flex min-h-screen flex-col bg-[#131c20] overflow-x-hidden"
@@ -26,8 +66,11 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       }}
     >
       <div className="layout-container flex flex-col h-full w-full">
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#293a42] px-4 md:px-10 py-3 bg-[#131c20]">
-          <div className="flex items-center gap-4 text-white">
+        <header
+          ref={headerRef}
+          className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#293a42] px-4 md:px-10 py-3 bg-[#131c20]"
+        >
+          <div ref={logoRef} className="flex items-center gap-4 text-white">
             <img
               src={iconHappy}
               alt="Who is Right logo"
@@ -39,7 +82,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex justify-end gap-8 items-center">
+          <div
+            ref={navRef}
+            className="hidden md:flex justify-end gap-8 items-center"
+          >
             <div className="flex items-center gap-9">
               {navLinks.map((link) => (
                 <a

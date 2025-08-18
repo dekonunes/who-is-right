@@ -1,6 +1,7 @@
-import React, { JSX } from "react";
+import React, { JSX, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
+import gsap from "gsap";
 
 const ResultBox = styled.div`
   margin-top: 2rem;
@@ -157,6 +158,19 @@ const parseResult = (
 
 const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
   const { t } = useTranslation();
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!boxRef.current || !result) return;
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
+      tl.from(".result-box", { opacity: 0, y: 8, duration: 0.25 })
+        .from(".section.situation", { opacity: 0, x: -12, duration: 0.25 }, "-=0.05")
+        .from(".section.default", { opacity: 0, y: 10, duration: 0.2, stagger: 0.06 }, "-=0.05")
+        .from(".section.verdict", { scale: 0.96, opacity: 0, duration: 0.22 });
+    }, boxRef);
+    return () => ctx.revert();
+  }, [result]);
 
   // Helper function to create sections
   const createSection = (title: string, content: string): JSX.Element => {
@@ -164,7 +178,7 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
       case "situation":
       case "situação":
         return (
-          <Section key="situation">
+          <Section key="situation" className="section situation">
             <SectionTitle>{t("situation")}:</SectionTitle>
             <SituationText>{content}</SituationText>
           </Section>
@@ -174,14 +188,14 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
       case "o veredicto":
       case "el veredicto":
         return (
-          <Section key="verdict">
+          <Section key="verdict" className="section verdict">
             <SectionTitle>{t("theVerdict")}:</SectionTitle>
             <VerdictSection>{content}</VerdictSection>
           </Section>
         );
       default:
         return (
-          <Section key={title}>
+          <Section key={title} className="section default">
             <SectionTitle>{t(title)}:</SectionTitle>
             <DefaultSection>{content}</DefaultSection>
           </Section>
@@ -192,7 +206,7 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
   if (loading) return <Loading>{t("loading")}</Loading>;
   if (!result) return <ResultBox>{t("resultPlaceholder")}</ResultBox>;
 
-  return <ResultBox>{parseResult(result, createSection)}</ResultBox>;
+  return <ResultBox ref={boxRef} className="result-box">{parseResult(result, createSection)}</ResultBox>;
 };
 
 export default ResultDisplay;
