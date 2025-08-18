@@ -1,4 +1,11 @@
-import React, { useRef, useState, useMemo, useEffect } from "react";
+import React, {
+  useRef,
+  useState,
+  useMemo,
+  useEffect,
+  useLayoutEffect,
+} from "react";
+import { TFunction } from "i18next";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "./firebase";
@@ -12,6 +19,7 @@ import {
   validateInput,
   isValidDebateType,
 } from "./utils/security";
+import gsap from "gsap";
 import womanImg from "./assets/optimized/woman.webp";
 import manImg from "./assets/optimized/man.webp";
 import kidImg from "./assets/optimized/kid_final.webp";
@@ -132,7 +140,7 @@ const userTypes = [
 ];
 
 interface MainAppProps {
-  t: (key: string, fallback?: string) => string;
+  t: TFunction;
   i18n: any;
   question: string;
   setQuestion: (value: string) => void;
@@ -185,169 +193,208 @@ const MainApp: React.FC<MainAppProps> = ({
   resultRef,
   QUESTION_MAX,
   ANSWER_MAX,
-}) => (
-  <div className="layout-content-container flex flex-col max-w-[960px] flex-1 mx-auto w-full">
-    <h2 className="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-2 pt-3">
-      {t("appName", "Settle the score")}
-    </h2>
-    <p className="text-gray-300 text-sm text-center px-4 pb-4">
-      {t(
-        "appDescription",
-        "Get AI-powered analysis to settle any argument or debate"
-      )}
-    </p>
-    {/* User type selection buttons */}
-    <div className="flex flex-row flex-wrap gap-3 justify-center mb-6">
-      {userTypes.map((typeObj) => (
+}) => {
+  const typesRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!typesRef.current) return;
+    const ctx = gsap.context(() => {
+      gsap.from(typesRef.current!.children, {
+        opacity: 0,
+        y: 12,
+        scale: 0.96,
+        stagger: 0.05,
+        duration: 0.4,
+        ease: "power2.out",
+        clearProps: "all",
+      });
+    }, typesRef);
+    return () => ctx.revert();
+  }, []);
+
+  useEffect(() => {
+    const btn = document.querySelector<HTMLButtonElement>(
+      `button[data-type="${selectedType}"]`
+    );
+    if (btn) {
+      gsap.fromTo(
+        btn,
+        { scale: 0.98 },
+        { scale: 1, duration: 0.18, ease: "back.out(2)" }
+      );
+    }
+  }, [selectedType]);
+
+  return (
+    <div className="layout-content-container flex flex-col max-w-[960px] flex-1 mx-auto w-full">
+      <h2 className="text-white tracking-light text-[28px] font-bold leading-tight px-4 text-center pb-2 pt-3">
+        {t("appName", "Settle the score")}
+      </h2>
+      <p className="text-gray-300 text-sm text-center px-4 pb-4">
+        {t(
+          "appDescription",
+          "Get AI-powered analysis to settle any argument or debate"
+        )}
+      </p>
+      {/* User type selection buttons */}
+      <div
+        ref={typesRef}
+        className="flex flex-row flex-wrap gap-3 justify-center mb-6"
+      >
+        {userTypes.map((typeObj) => (
+          <button
+            key={typeObj.key}
+            data-type={typeObj.key}
+            type="button"
+            className={`px-4 py-2 rounded-full font-semibold shadow focus:outline-none bg-[#293a42] text-white hover:bg-[#35505c] ${
+              selectedType === typeObj.key
+                ? "ring-2 ring-[#add6ea] bg-[#35505c]"
+                : ""
+            }`}
+            onClick={() => {
+              setSelectedType(typeObj.key);
+              // Track user type selection
+              logEvent(analytics, "user_type_selected", {
+                user_type: typeObj.key,
+                language: i18n.language,
+              });
+            }}
+          >
+            {t(`userTypeLabel.${typeObj.key}`, typeObj.label)}
+          </button>
+        ))}
+      </div>
+      <form onSubmit={handleSubmit} className="w-full">
+        <div className="flex flex-wrap flex-col direction items-start px-4">
+          <label
+            htmlFor="question-input"
+            className="block text-white text-base font-medium mb-1"
+          >
+            {t("questionLabel", "What's the argument about?")}
+          </label>
+          <textarea
+            id="question-input"
+            placeholder={t("questionPlaceholder", "Enter the question...")}
+            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#293a42] focus:border-none min-h-24 placeholder:text-[#9ab4c1] p-4 text-base font-normal leading-normal"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            maxLength={QUESTION_MAX}
+          />
+          <div
+            className={`text-xs text-right self-end mt-1 ${
+              question.length > QUESTION_MAX ? "text-red-400" : "text-gray-400"
+            }`}
+          >
+            {question.length} / {QUESTION_MAX}
+          </div>
+          {errors.question && (
+            <div className="text-red-400 text-sm mt-1 w-full">
+              {errors.question}
+            </div>
+          )}
+        </div>
+      </form>
+      <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
+        {t("tellYourSide", "Tell your side of the story")}
+      </h2>
+      <div className="flex flex-wrap items-center gap-4 px-4 py-2">
+        <img
+          src={selectedTypeObj.imageA}
+          alt={t("herMessage", "Her avatar")}
+          className="w-24 h-24 object-contain mr-3 md:w-48 md:h-48"
+        />
+        <div className="flex-1 w-full">
+          <label
+            htmlFor="answerA"
+            className="block text-white text-base font-medium mb-1 w-full"
+          >
+            {answerALabel}
+          </label>
+          <textarea
+            id="answerA"
+            placeholder={answerAPlaceholder}
+            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#293a42] focus:border-none min-h-24 placeholder:text-[#9ab4c1] p-4 text-base font-normal leading-normal"
+            value={answerA}
+            onChange={(e) => setAnswerA(e.target.value)}
+            maxLength={ANSWER_MAX}
+          />
+          <div
+            className={`text-xs text-right mt-1 ${
+              answerA.length > ANSWER_MAX ? "text-red-400" : "text-gray-400"
+            }`}
+          >
+            {answerA.length} / {ANSWER_MAX}
+          </div>
+          {errors.answerA && (
+            <div className="text-red-400 text-sm mt-1 w-full">
+              {errors.answerA}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-4 px-4 py-2">
+        <div className="flex-1 w-full">
+          <label
+            htmlFor="answerB"
+            className="block text-white text-base font-medium mb-1 w-full"
+          >
+            {answerBLabel}
+          </label>
+          <textarea
+            id="answerB"
+            placeholder={answerBPlaceholder}
+            className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#293a42] focus:border-none min-h-24 placeholder:text-[#9ab4c1] p-4 text-base font-normal leading-normal"
+            value={answerB}
+            onChange={(e) => setAnswerB(e.target.value)}
+            maxLength={ANSWER_MAX}
+          />
+          <div
+            className={`text-xs text-right mt-1 ${
+              answerB.length > ANSWER_MAX ? "text-red-400" : "text-gray-400"
+            }`}
+          >
+            {answerB.length} / {ANSWER_MAX}
+          </div>
+          {errors.answerB && (
+            <div className="text-red-400 text-sm mt-1 w-full">
+              {errors.answerB}
+            </div>
+          )}
+        </div>
+        <img
+          src={selectedTypeObj.imageB}
+          alt={t("hisMessage", "His avatar")}
+          className="w-24 h-24 object-contain mr-3 md:w-48 md:h-48"
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-4 px-4 py-2">
         <button
-          key={typeObj.key}
-          type="button"
-          className={`px-4 py-2 rounded-full font-semibold shadow focus:outline-none bg-[#293a42] text-white hover:bg-[#35505c] ${
-            selectedType === typeObj.key
-              ? "ring-2 ring-[#add6ea] bg-[#35505c]"
-              : ""
-          }`}
-          onClick={() => {
-            setSelectedType(typeObj.key);
-            // Track user type selection
-            logEvent(analytics, "user_type_selected", {
-              user_type: typeObj.key,
-              language: i18n.language,
-            });
-          }}
+          type="submit"
+          onClick={handleSubmit}
+          disabled={loading}
+          className="flex-1 bg-[#add6ea] text-[#131c20] md:text-base text-[0.9rem] px-6 py-3 rounded-full font-semibold hover:bg-[#8bc4d8] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {t(`userTypeLabel.${typeObj.key}`, typeObj.label)}
+          {loading ? t("loading", "Checking...") : t("submit", "Who is right?")}
         </button>
-      ))}
-    </div>
-    <form onSubmit={handleSubmit} className="w-full">
-      <div className="flex flex-wrap flex-col direction items-start px-4">
-        <label
-          htmlFor="question-input"
-          className="block text-white text-base font-medium mb-1"
+        <button
+          type="button"
+          onClick={handleClear}
+          className="flex-1 bg-[#293a42] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#35505c]"
         >
-          {t("questionLabel", "What's the argument about?")}
-        </label>
-        <textarea
-          id="question-input"
-          placeholder={t("questionPlaceholder", "Enter the question...")}
-          className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#293a42] focus:border-none min-h-24 placeholder:text-[#9ab4c1] p-4 text-base font-normal leading-normal"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          maxLength={QUESTION_MAX}
-        />
-        <div
-          className={`text-xs text-right self-end mt-1 ${
-            question.length > QUESTION_MAX ? "text-red-400" : "text-gray-400"
-          }`}
-        >
-          {question.length} / {QUESTION_MAX}
-        </div>
-        {errors.question && (
-          <div className="text-red-400 text-sm mt-1 w-full">
-            {errors.question}
-          </div>
-        )}
+          {t("clear", "Clear")}
+        </button>
       </div>
-    </form>
-    <h2 className="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">
-      {t("tellYourSide", "Tell your side of the story")}
-    </h2>
-    <div className="flex flex-wrap items-center gap-4 px-4 py-2">
-      <img
-        src={selectedTypeObj.imageA}
-        alt={t("herMessage", "Her avatar")}
-        className="w-24 h-24 object-contain mr-3 md:w-48 md:h-48"
-      />
-      <div className="flex-1 w-full">
-        <label
-          htmlFor="answerA"
-          className="block text-white text-base font-medium mb-1 w-full"
-        >
-          {answerALabel}
-        </label>
-        <textarea
-          id="answerA"
-          placeholder={answerAPlaceholder}
-          className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#293a42] focus:border-none min-h-24 placeholder:text-[#9ab4c1] p-4 text-base font-normal leading-normal"
-          value={answerA}
-          onChange={(e) => setAnswerA(e.target.value)}
-          maxLength={ANSWER_MAX}
-        />
-        <div
-          className={`text-xs text-right mt-1 ${
-            answerA.length > ANSWER_MAX ? "text-red-400" : "text-gray-400"
-          }`}
-        >
-          {answerA.length} / {ANSWER_MAX}
-        </div>
-        {errors.answerA && (
-          <div className="text-red-400 text-sm mt-1 w-full">
-            {errors.answerA}
-          </div>
-        )}
-      </div>
-    </div>
-    <div className="flex flex-wrap items-center gap-4 px-4 py-2">
-      <div className="flex-1 w-full">
-        <label
-          htmlFor="answerB"
-          className="block text-white text-base font-medium mb-1 w-full"
-        >
-          {answerBLabel}
-        </label>
-        <textarea
-          id="answerB"
-          placeholder={answerBPlaceholder}
-          className="form-input flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-white focus:outline-0 focus:ring-0 border-none bg-[#293a42] focus:border-none min-h-24 placeholder:text-[#9ab4c1] p-4 text-base font-normal leading-normal"
-          value={answerB}
-          onChange={(e) => setAnswerB(e.target.value)}
-          maxLength={ANSWER_MAX}
-        />
-        <div
-          className={`text-xs text-right mt-1 ${
-            answerB.length > ANSWER_MAX ? "text-red-400" : "text-gray-400"
-          }`}
-        >
-          {answerB.length} / {ANSWER_MAX}
-        </div>
-        {errors.answerB && (
-          <div className="text-red-400 text-sm mt-1 w-full">
-            {errors.answerB}
-          </div>
-        )}
-      </div>
-      <img
-        src={selectedTypeObj.imageB}
-        alt={t("hisMessage", "His avatar")}
-        className="w-24 h-24 object-contain mr-3 md:w-48 md:h-48"
-      />
-    </div>
-    <div className="flex flex-wrap items-center gap-4 px-4 py-2">
-      <button
-        type="submit"
-        onClick={handleSubmit}
-        disabled={loading}
-        className="flex-1 bg-[#add6ea] text-[#131c20] md:text-base text-[0.9rem] px-6 py-3 rounded-full font-semibold hover:bg-[#8bc4d8] disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {loading ? t("loading", "Checking...") : t("submit", "Who is right?")}
-      </button>
-      <button
-        type="button"
-        onClick={handleClear}
-        className="flex-1 bg-[#293a42] text-white px-6 py-3 rounded-full font-semibold hover:bg-[#35505c]"
-      >
-        {t("clear", "Clear")}
-      </button>
-    </div>
-    {(result || loading) && <ResultDisplay result={result} loading={loading} />}
+      <div ref={resultRef} />
 
-    <div ref={resultRef} />
+      {(result || loading) && (
+        <ResultDisplay result={result} loading={loading} />
+      )}
 
-    {/* Amazon Recommendations */}
-    <AmazonRecommendations selectedType={selectedType} />
-  </div>
-);
+      {/* Amazon Recommendations */}
+      <AmazonRecommendations selectedType={selectedType} />
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -591,7 +638,10 @@ const App: React.FC = () => {
         });
         // Scroll to result
         setTimeout(() => {
-          resultRef.current?.scrollIntoView({ behavior: "smooth" });
+          resultRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
         }, 100);
       }
     } catch (err: any) {
