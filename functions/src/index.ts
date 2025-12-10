@@ -24,6 +24,7 @@ type DebateRequest = {
   answerB: string;
   type: string;
   language: string;
+  tone?: "funny" | "serious";
 };
 
 // Initialize Gemini with your API key (store securely, e.g., in environment config)
@@ -99,38 +100,51 @@ export const getGeminiVerdict = async ({
   answerB,
   type,
   language,
+  tone = "funny",
 }: {
   question: string;
   answerA: string;
   answerB: string;
   type: string;
   language: string;
+  tone?: "funny" | "serious";
 }) => {
+  const tonePreference = tone === "serious" ? "serious" : "funny";
   const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
-  const promptPart1 = `You are a humorous and impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually a`;
-  const promptPart2 = `The user will provide a situation, and each person's side of the story. Your job is to generate a short, funny, and lighthearted decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n\n`;
-  // const promptPart3 = `**CRITICAL: You MUST format your response using the following structure with **bold** section headers:**\n\n**Situation:** [Brief description of the argument/debate context]\n\n**[Person 1 Name]:** [First person's perspective and reasoning]\n\n**[Person 2 Name]:** [Second person's perspective and reasoning]\n\n**The Verdict:** [Your analysis and conclusion on who is right, with humorous reasoning]`;
-  const promptPart3 = `CRITICAL OPERATIONAL RULES:
-  - LANGUAGE: You must ALWAYS detect and respond in the exact same language used in the user inputs (English, Portuguese, Spanish, etc.)
-  - ROLE BOUNDARIES: You are ONLY a debate judge. Never give legal, medical, financial, or relationship advice
-  - SAFETY: Never comment on confidential information, personal details, or sensitive topics
-  - IMPARTIALITY: Always remain neutral and fair, even if one person's argument seems stronger
-  - NO TIES: You must NEVER declare a tie or say both people are equally right. Always pick a winner, even if it's by a small margin
-  - HUMOR: Use witty, playful language while maintaining respect for both parties
-  - STRUCTURE: Follow the exact output format specified below
-  - LENGTH: Keep responses concise but thorough (1-2 paragraphs maximum)
+  const promptPart1 = `You are an impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually a`;
+  const toneInstruction =
+    tonePreference === "serious"
+      ? "- Your response should be concise, balanced, and respectful.\n- Light humor is optional; avoid sarcasm or over-the-top jokes.\n"
+      : "- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n";
+  const promptPart2 = `The user will provide a situation, and each person's side of the story. Your job is to generate a short decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n${toneInstruction}\n`;
+  const verdictDescriptor =
+    tonePreference === "serious" ? "clear, fair reasoning" : "humorous reasoning";
+  const promptPart3 = `**CRITICAL: You MUST format your response using the following structure with **bold** section headers:**\n\n**Situation:** [Brief description of the argument/debate context]\n\n**[Person 1 Name]:** [First person's perspective and reasoning]\n\n**[Person 2 Name]:** [Second person's perspective and reasoning]\n\n**The Verdict:** [Your analysis and conclusion on who is right, with ${verdictDescriptor}]`;
+  // const promptPart3 = `CRITICAL OPERATIONAL RULES:
+  // - LANGUAGE: You must ALWAYS detect and respond in the exact same language used in the user inputs (English, Portuguese, Spanish, etc.)
+  // - ROLE BOUNDARIES: You are ONLY a debate judge. Never give legal, medical, financial, or relationship advice
+  // - SAFETY: Never comment on confidential information, personal details, or sensitive topics
+  // - IMPARTIALITY: Always remain neutral and fair, even if one person's argument seems stronger
+  // - NO TIES: You must NEVER declare a tie or say both people are equally right. Always pick a winner, even if it's by a small margin
+  // - HUMOR: Use witty, playful language while maintaining respect for both parties
+  // - STRUCTURE: Follow the exact output format specified below
+  // - LENGTH: Keep responses concise but thorough (1-2 paragraphs maximum)
 
-  OUTPUT FORMAT REQUIREMENTS:
-  You MUST structure your response exactly like this:
+  // OUTPUT FORMAT REQUIREMENTS:
+  // You MUST structure your response exactly like this:
 
-  **Situation:** [Brief, neutral description of the debate context]
+  // **Situation:** [Brief, neutral description of the debate context]
 
-  **[Person 1 Name]:** [Fair summary of their perspective, highlighting key points]
+  // **[Person 1 Name]:** [Fair summary of their perspective, highlighting key points]
 
-  **[Person 2 Name]:** [Fair summary of their perspective, highlighting key points]
+  // **[Person 2 Name]:** [Fair summary of their perspective, highlighting key points]
 
-  **The Verdict:** [Your analysis and conclusion with humorous reasoning]`;
+  // **The Verdict:** [Your analysis and conclusion with humorous reasoning]`;
   const endPart = `\n\nThis tool is for entertainment only. Keep it light, safe, and always in good fun.`;
+  const buildEndingNote = (funnyExamples: string) =>
+    tonePreference === "serious"
+      ? "- Finish with a concise, constructive takeaway without jokes.\n"
+      : `- End with a humorous touch like: ${funnyExamples}\n`;
   const prompts = {
     couple: `${promptPart1} couple. ${promptPart2}${promptPart3}\n- You can say the ${translateSpeaker(
       "Woman",
@@ -138,7 +152,9 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Man",
       language
-    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n- End with a humorous touch like: "Good luck with dinner.", "May the best debater win the remote control tonight!", "Here's hoping your next argument is about something less important!", or "Remember: love means never having to say you're sorry... for being right!"\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- woman: string (her version)\n- man: string (his version)${endPart}
+    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n${buildEndingNote(
+      '"Good luck with dinner.", "May the best debater win the remote control tonight!", "Here\'s hoping your next argument is about something less important!", or "Remember: love means never having to say you\'re sorry... for being right!"'
+    )}\nExpected Input Structure:\n- situation: string (the argument or question)\n- woman: string (her version)\n- man: string (his version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Woman",
       language
@@ -150,7 +166,9 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Friend 2",
       language
-    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n- End with a humorous touch like: "Good luck with your next argument.", "May your friendship survive this debate!", "Here's to many more arguments ahead!", or "Remember: friends don't let friends win arguments!"\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Friend 1: string (version)\n- Friend 2: string (version)${endPart}
+    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n${buildEndingNote(
+      '"Good luck with your next argument.", "May your friendship survive this debate!", "Here\'s to many more arguments ahead!", or "Remember: friends don\'t let friends win arguments!"'
+    )}\nExpected Input Structure:\n- situation: string (the argument or question)\n- Friend 1: string (version)\n- Friend 2: string (version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Friend 1",
       language
@@ -162,7 +180,9 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Child",
       language
-    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n- End with a humorous touch like: "Good luck with the next allowance.", "May the best negotiator win the bedtime battle!", "Here's to peaceful family dinners ahead!", or "Remember: moms have years of experience in being right!"\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Mon: string (her version)\n- Child: string (his version)${endPart}
+    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n${buildEndingNote(
+      '"Good luck with the next allowance.", "May the best negotiator win the bedtime battle!", "Here\'s to peaceful family dinners ahead!", or "Remember: moms have years of experience in being right!"'
+    )}\nExpected Input Structure:\n- situation: string (the argument or question)\n- Mon: string (her version)\n- Child: string (his version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Mon",
       language
@@ -174,7 +194,9 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Sibling 2",
       language
-    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n- End with a humorous touch like: "Good luck with the next allowance.", "May the best sibling win the room sharing battle!", "Here's to peaceful family car rides ahead!", or "Remember: siblings are forever, but being right is temporary!"\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Simbling 1: string (her version)\n- Simbling 2: string (his version)${endPart}
+    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n${buildEndingNote(
+      '"Good luck with the next allowance.", "May the best sibling win the room sharing battle!", "Here\'s to peaceful family car rides ahead!", or "Remember: siblings are forever, but being right is temporary!"'
+    )}\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Simbling 1: string (her version)\n- Simbling 2: string (his version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Sibling 1",
       language
@@ -186,7 +208,9 @@ export const getGeminiVerdict = async ({
     )} is right, the ${translateSpeaker(
       "Employee",
       language
-    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n- End with a humorous touch like: "Good luck with your salary raises.", "May the best debater win the promotion!", "Here's to productive team meetings ahead!", or "Remember: the boss is always right... until they're not!"\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Boss: string (her version)\n- Employee: string (his version)${endPart}
+    )} is right, or neither is right — but NEVER declare a tie. Always pick a winner.\n${buildEndingNote(
+      '"Good luck with your salary raises.", "May the best debater win the promotion!", "Here\'s to productive team meetings ahead!", or "Remember: the boss is always right... until they\'re not!"'
+    )}\n\nExpected Input Structure:\n- situation: string (the argument or question)\n- Boss: string (her version)\n- Employee: string (his version)${endPart}
 \nsituation: ${question}\n${translateSpeaker(
       "Boss",
       language
@@ -238,6 +262,7 @@ export const saveDebate = onRequest(
       answerB,
       type,
       language = "en",
+      tone = "funny",
     } = req.body as DebateRequest;
     if (!question || !answerA || !answerB) {
       console.error("Missing required fields", {
@@ -250,6 +275,7 @@ export const saveDebate = onRequest(
       res.status(400).send({ error: "Missing required fields" });
       return;
     }
+    const normalizedTone = tone === "serious" ? "serious" : "funny";
     try {
       // Get the Gemini verdict
       const verdict = await getGeminiVerdict({
@@ -258,6 +284,7 @@ export const saveDebate = onRequest(
         answerB,
         type,
         language,
+        tone: normalizedTone,
       });
       // Save the debate with the verdict
       const docRef = await db.collection("debates").add({
@@ -265,6 +292,7 @@ export const saveDebate = onRequest(
         answerA,
         answerB,
         type,
+        tone: normalizedTone,
         verdict,
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
       });

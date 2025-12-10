@@ -1,6 +1,12 @@
 {
-  "name": "",
-  "short_name": "",
+  "name": "Who is Right? - Settle Debates with AI",
+  "short_name": "Who is Right?",
+  "description": "Settle arguments and debates with AI. Get unbiased analysis of both sides of any argument.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#131c20",
+  "theme_color": "#add6ea",
+  "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -12,8 +18,5 @@
       "sizes": "512x512",
       "type": "image/png"
     }
-  ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  ]
 }

@@ -1,6 +1,9 @@
 {
   "appName": "Quién Tiene Razón",
   "appDescription": "Deja que la IA decida quién tiene razón entre tú y alguien más",
+  "toneLabel": "Tipo de respuesta",
+  "toneFunny": "Divertida",
+  "toneSerious": "Seria",
   "questionLabel": "Pregunta",
   "questionPlaceholder": "Escribe tu pregunta...",
   "herMessage": "Mensaje de ella",

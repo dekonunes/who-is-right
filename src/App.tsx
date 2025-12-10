@@ -4,15 +4,27 @@ import React, {
   useMemo,
   useEffect,
   useLayoutEffect,
+  Suspense,
+  lazy,
 } from "react";
 import { TFunction } from "i18next";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from "react-router-dom";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "./firebase";
 import MainLayout from "./components/MainLayout";
-import ResultDisplay from "./components/ResultDisplay";
-import HowItWorks from "./components/HowItWorks";
-import AmazonRecommendations from "./components/AmazonRecommendations";
+import Switch from "./components/Switch";
+
+// Lazy load components for better performance
+const ResultDisplay = lazy(() => import("./components/ResultDisplay"));
+const HowItWorks = lazy(() => import("./components/HowItWorks"));
+const AmazonRecommendations = lazy(
+  () => import("./components/AmazonRecommendations")
+);
 import { useTranslation } from "react-i18next";
 import {
   sanitizeInput,
@@ -155,6 +167,8 @@ interface MainAppProps {
   saveError: string | null;
   selectedType: string;
   setSelectedType: (value: string) => void;
+  answerTone: "funny" | "serious";
+  setAnswerTone: (value: "funny" | "serious") => void;
   selectedTypeObj: (typeof userTypes)[0];
   answerALabel: string;
   answerBLabel: string;
@@ -183,6 +197,8 @@ const MainApp: React.FC<MainAppProps> = ({
   saveError,
   selectedType,
   setSelectedType,
+  answerTone,
+  setAnswerTone,
   selectedTypeObj,
   answerALabel,
   answerBLabel,
@@ -236,6 +252,17 @@ const MainApp: React.FC<MainAppProps> = ({
           "Get AI-powered analysis to settle any argument or debate"
         )}
       </p>
+      <div className="w-full flex justify-center px-4 pb-4">
+        <Switch
+          label={t("toneLabel", "Type of answer")}
+          options={[
+            { label: t("toneFunny", "Funny"), value: "funny" },
+            { label: t("toneSerious", "Serious"), value: "serious" },
+          ]}
+          value={answerTone}
+          onChange={(val) => setAnswerTone(val as "funny" | "serious")}
+        />
+      </div>
       {/* User type selection buttons */}
       <div
         ref={typesRef}
@@ -387,13 +414,69 @@ const MainApp: React.FC<MainAppProps> = ({
       <div ref={resultRef} />
 
       {(result || loading) && (
-        <ResultDisplay result={result} loading={loading} />
+        <Suspense
+          fallback={
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100px",
+                fontSize: "16px",
+                color: "#666",
+              }}
+            >
+              Loading result...
+            </div>
+          }
+        >
+          <ResultDisplay result={result} loading={loading} />
+        </Suspense>
       )}
 
       {/* Amazon Recommendations */}
-      <AmazonRecommendations selectedType={selectedType} />
+      <Suspense
+        fallback={
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100px",
+              fontSize: "16px",
+              color: "#666",
+            }}
+          >
+            Loading recommendations...
+          </div>
+        }
+      >
+        <AmazonRecommendations selectedType={selectedType} />
+      </Suspense>
     </div>
   );
+};
+
+// Component to handle dynamic canonical URLs
+const CanonicalURL: React.FC = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const canonicalUrl = `https://whoisright.app${location.pathname}`;
+    let canonical = document.querySelector(
+      'link[rel="canonical"]'
+    ) as HTMLLinkElement;
+
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+
+    canonical.href = canonicalUrl;
+  }, [location.pathname]);
+
+  return null;
 };
 
 const App: React.FC = () => {
@@ -453,6 +536,7 @@ const App: React.FC = () => {
   const [question, setQuestion] = useState("");
   const [answerA, setAnswerA] = useState("");
   const [answerB, setAnswerB] = useState("");
+  const [answerTone, setAnswerTone] = useState<"funny" | "serious">("funny");
   const [result, setResult] = useState<string | null>(null);
   // const [result, setResult] = useState<string | null>(
   //   `OK. Vamos lá! **Situação:** A filha saiu do emprego dois meses antes do intercâmbio, e a mãe não está feliz. **Mon:** A mãe acha um absurdo porque a filha vai se atrasar muito, tem que ir ao médico, visitar a família e arrumar as coisas. **Child:** A filha acha completamente possível, porque durante a semana pode arrumar as coisas e ir ao médico, e nos finais de semana visitar quem ela quer. **O Veredicto:** Hum... Analisando as evidências... A filha parece ter uma agenda mais apertada que a de um malabarista em um vulcão! Mas, a mãe tem um ponto: as tarefas se acumulam como roupa suja em dia de chuva. Declaro: A mãe está meio certa, a filha está meio certa, e o tempo dirá quem vai ter mais dor de cabeça. Boa sorte com o próximo intercâmbio! "`
@@ -572,6 +656,7 @@ const App: React.FC = () => {
       logEvent(analytics, "daily_limit_exceeded", {
         user_type: selectedType,
         language: i18n.language,
+        tone: answerTone,
       });
       return;
     }
@@ -584,6 +669,7 @@ const App: React.FC = () => {
         error_fields: Object.keys(errs),
         user_type: selectedType,
         language: i18n.language,
+        tone: answerTone,
         question_length: question.length,
         answer_a_length: answerA.length,
         answer_b_length: answerB.length,
@@ -600,14 +686,15 @@ const App: React.FC = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            question: sanitizeInput(question),
-            answerA: sanitizeInput(answerA),
-            answerB: sanitizeInput(answerB),
-            type: selectedType,
-            language: i18n.language,
-          }),
-        }
-      );
+          question: sanitizeInput(question),
+          answerA: sanitizeInput(answerA),
+          answerB: sanitizeInput(answerB),
+          type: selectedType,
+          language: i18n.language,
+          tone: answerTone,
+        }),
+      }
+    );
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         setSaveStatus("error");
@@ -620,6 +707,7 @@ const App: React.FC = () => {
           error_message: data.error || "Unknown error",
           user_type: selectedType,
           language: i18n.language,
+          tone: answerTone,
         });
       } else {
         const data = await response.json();
@@ -632,6 +720,7 @@ const App: React.FC = () => {
         logEvent(analytics, "debate_submitted", {
           user_type: selectedType,
           language: i18n.language,
+          tone: answerTone,
           question_length: question.length,
           answer_a_length: answerA.length,
           answer_b_length: answerB.length,
@@ -654,6 +743,7 @@ const App: React.FC = () => {
         error_message: err.message || "Unknown error",
         user_type: selectedType,
         language: i18n.language,
+        tone: answerTone,
       });
     } finally {
       setLoading(false);
@@ -675,6 +765,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
+      <CanonicalURL />
       <MainLayout>
         <Routes>
           <Route
@@ -696,6 +787,8 @@ const App: React.FC = () => {
                 saveError={saveError}
                 selectedType={selectedType}
                 setSelectedType={setSelectedType}
+                answerTone={answerTone}
+                setAnswerTone={setAnswerTone}
                 selectedTypeObj={selectedTypeObj}
                 answerALabel={answerALabel}
                 answerBLabel={answerBLabel}
@@ -709,7 +802,29 @@ const App: React.FC = () => {
               />
             }
           />
-          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route
+            path="/how-it-works"
+            element={
+              <Suspense
+                fallback={
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "200px",
+                      fontSize: "18px",
+                      color: "#666",
+                    }}
+                  >
+                    Loading...
+                  </div>
+                }
+              >
+                <HowItWorks />
+              </Suspense>
+            }
+          />
         </Routes>
       </MainLayout>
     </Router>

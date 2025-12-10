@@ -1,6 +1,9 @@
 {
   "appName": "Quem Está Certo?",
   "appDescription": "Deixa que a IA decide quem está certo entre você e alguém",
+  "toneLabel": "Tipo de resposta",
+  "toneFunny": "Engraçada",
+  "toneSerious": "Séria",
   "questionLabel": "O que está em jogo?",
   "questionPlaceholder": "Digite a situação...",
   "herMessage": "Mensagem dela",
