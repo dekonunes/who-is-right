@@ -536,7 +536,7 @@ const App: React.FC = () => {
   const [question, setQuestion] = useState("");
   const [answerA, setAnswerA] = useState("");
   const [answerB, setAnswerB] = useState("");
-  const [answerTone, setAnswerTone] = useState<"funny" | "serious">("funny");
+  const [answerTone, setAnswerTone] = useState<"funny" | "serious">("serious");
   const [result, setResult] = useState<string | null>(null);
   // const [result, setResult] = useState<string | null>(
   //   `OK. Vamos lá! **Situação:** A filha saiu do emprego dois meses antes do intercâmbio, e a mãe não está feliz. **Mon:** A mãe acha um absurdo porque a filha vai se atrasar muito, tem que ir ao médico, visitar a família e arrumar as coisas. **Child:** A filha acha completamente possível, porque durante a semana pode arrumar as coisas e ir ao médico, e nos finais de semana visitar quem ela quer. **O Veredicto:** Hum... Analisando as evidências... A filha parece ter uma agenda mais apertada que a de um malabarista em um vulcão! Mas, a mãe tem um ponto: as tarefas se acumulam como roupa suja em dia de chuva. Declaro: A mãe está meio certa, a filha está meio certa, e o tempo dirá quem vai ter mais dor de cabeça. Boa sorte com o próximo intercâmbio! "`
@@ -686,15 +686,15 @@ const App: React.FC = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-          question: sanitizeInput(question),
-          answerA: sanitizeInput(answerA),
-          answerB: sanitizeInput(answerB),
-          type: selectedType,
-          language: i18n.language,
-          tone: answerTone,
-        }),
-      }
-    );
+            question: sanitizeInput(question),
+            answerA: sanitizeInput(answerA),
+            answerB: sanitizeInput(answerB),
+            type: selectedType,
+            language: i18n.language,
+            tone: answerTone,
+          }),
+        }
+      );
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         setSaveStatus("error");

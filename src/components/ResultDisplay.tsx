@@ -2,6 +2,7 @@ import React, { JSX, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import gsap from "gsap";
+import DOMPurify from "dompurify";
 
 const ResultBox = styled.div`
   margin-top: 2rem;
@@ -123,34 +124,48 @@ const parseResult = (
   // Remove any leading/trailing whitespace
   cleanedResult = cleanedResult.trim();
 
-  // If no structured sections found, try to parse the text manually
-  // Look for common patterns in the response
-  // Split by <strong> tags since there are no \n characters
-  const sections = cleanedResult
-    .split(/<strong>/)
-    .filter((section) => section.trim());
-  const manualSections: JSX.Element[] = [];
+  // Find all section headers (pattern: <strong>Title:</strong>)
+  // This regex specifically looks for headers ending with ':'
+  const headerRegex = /<strong>([^<]+?):<\/strong>/g;
+  const headers: Array<{ title: string; index: number; endIndex: number }> = [];
+  let regexMatch;
 
-  for (const section of sections) {
-    // Each section should start with the title and content
-    const sectionMatch = section.match(/(.*?):<\/strong>\s*(.*)/);
-    if (sectionMatch) {
-      const title = sectionMatch[1]?.trim();
-      const content = sectionMatch[2]?.trim();
-      manualSections.push(createSection(title, content));
-    }
+  // Use a while loop to find all header matches
+  while ((regexMatch = headerRegex.exec(cleanedResult)) !== null) {
+    headers.push({
+      title: regexMatch[1].trim(),
+      index: regexMatch.index,
+      endIndex: regexMatch.index + regexMatch[0].length,
+    });
   }
 
-  // If we found manual sections, return them
-  if (manualSections.length > 0) {
-    return manualSections;
+  // If we found headers, extract content between them
+  if (headers.length > 0) {
+    const sections: JSX.Element[] = [];
+
+    for (let i = 0; i < headers.length; i++) {
+      const currentHeader = headers[i];
+      const nextHeader = headers[i + 1];
+
+      // Extract content from end of current header to start of next header (or end of string)
+      const contentStart = currentHeader.endIndex;
+      const contentEnd = nextHeader ? nextHeader.index : cleanedResult.length;
+      const content = cleanedResult
+        .substring(contentStart, contentEnd)
+        .trim();
+
+      sections.push(createSection(currentHeader.title, content));
+    }
+
+    return sections;
   }
 
   // Fallback: return as plain text with line breaks
+  const fallbackContent = DOMPurify.sanitize(cleanedResult.replace(/\n/g, "<br/>"));
   return (
     <div
       dangerouslySetInnerHTML={{
-        __html: cleanedResult.replace(/\n/g, "<br/>"),
+        __html: fallbackContent,
       }}
     />
   );
@@ -165,8 +180,16 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
       tl.from(".result-box", { opacity: 0, y: 8, duration: 0.25 })
-        .from(".section.situation", { opacity: 0, x: -12, duration: 0.25 }, "-=0.05")
-        .from(".section.default", { opacity: 0, y: 10, duration: 0.2, stagger: 0.06 }, "-=0.05")
+        .from(
+          ".section.situation",
+          { opacity: 0, x: -12, duration: 0.25 },
+          "-=0.05"
+        )
+        .from(
+          ".section.default",
+          { opacity: 0, y: 10, duration: 0.2, stagger: 0.06 },
+          "-=0.05"
+        )
         .from(".section.verdict", { scale: 0.96, opacity: 0, duration: 0.22 });
     }, boxRef);
     return () => ctx.revert();
@@ -174,13 +197,16 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
 
   // Helper function to create sections
   const createSection = (title: string, content: string): JSX.Element => {
+    // Sanitize HTML content to prevent XSS attacks
+    const sanitizedContent = DOMPurify.sanitize(content);
+
     switch (title.toLowerCase()) {
       case "situation":
       case "situação":
         return (
           <Section key="situation" className="section situation">
             <SectionTitle>{t("situation")}:</SectionTitle>
-            <SituationText>{content}</SituationText>
+            <SituationText dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
           </Section>
         );
       case "the verdict":
@@ -190,14 +216,14 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
         return (
           <Section key="verdict" className="section verdict">
             <SectionTitle>{t("theVerdict")}:</SectionTitle>
-            <VerdictSection>{content}</VerdictSection>
+            <VerdictSection dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
           </Section>
         );
       default:
         return (
           <Section key={title} className="section default">
             <SectionTitle>{t(title)}:</SectionTitle>
-            <DefaultSection>{content}</DefaultSection>
+            <DefaultSection dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
           </Section>
         );
     }
@@ -206,7 +232,11 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
   if (loading) return <Loading>{t("loading")}</Loading>;
   if (!result) return <ResultBox>{t("resultPlaceholder")}</ResultBox>;
 
-  return <ResultBox ref={boxRef} className="result-box">{parseResult(result, createSection)}</ResultBox>;
+  return (
+    <ResultBox ref={boxRef} className="result-box">
+      {parseResult(result, createSection)}
+    </ResultBox>
+  );
 };
 
 export default ResultDisplay;

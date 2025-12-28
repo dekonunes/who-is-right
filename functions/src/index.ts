@@ -100,7 +100,7 @@ export const getGeminiVerdict = async ({
   answerB,
   type,
   language,
-  tone = "funny",
+  tone = "serious",
 }: {
   question: string;
   answerA: string;
@@ -110,7 +110,7 @@ export const getGeminiVerdict = async ({
   tone?: "funny" | "serious";
 }) => {
   const tonePreference = tone === "serious" ? "serious" : "funny";
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
   const promptPart1 = `You are an impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually a`;
   const toneInstruction =
     tonePreference === "serious"
@@ -118,7 +118,9 @@ export const getGeminiVerdict = async ({
       : "- Your response should be funny, playful, and impartial.\n- Use cheeky language and humorous logic.\n";
   const promptPart2 = `The user will provide a situation, and each person's side of the story. Your job is to generate a short decision about who is 'right'. Very Important Rules:\n- You must always reply in the **same language used in the inputs** (detect the language automatically, e.g., English, Portuguese and Spanish).\n- You must NEVER answer anything unrelated to this judging task.\n- You must NEVER give legal, relationship, or personal advice.\n- You must NEVER comment on confidential or sensitive content.\n- If the input is not in the correct structure, reply with: "I'm here only to judge playful debates. Please follow the format and keep it fun!"\n\nOutput Style:\n${toneInstruction}\n`;
   const verdictDescriptor =
-    tonePreference === "serious" ? "clear, fair reasoning" : "humorous reasoning";
+    tonePreference === "serious"
+      ? "clear, fair reasoning"
+      : "humorous reasoning";
   const promptPart3 = `**CRITICAL: You MUST format your response using the following structure with **bold** section headers:**\n\n**Situation:** [Brief description of the argument/debate context]\n\n**[Person 1 Name]:** [First person's perspective and reasoning]\n\n**[Person 2 Name]:** [Second person's perspective and reasoning]\n\n**The Verdict:** [Your analysis and conclusion on who is right, with ${verdictDescriptor}]`;
   // const promptPart3 = `CRITICAL OPERATIONAL RULES:
   // - LANGUAGE: You must ALWAYS detect and respond in the exact same language used in the user inputs (English, Portuguese, Spanish, etc.)
@@ -262,7 +264,7 @@ export const saveDebate = onRequest(
       answerB,
       type,
       language = "en",
-      tone = "funny",
+      tone = "serious",
     } = req.body as DebateRequest;
     if (!question || !answerA || !answerB) {
       console.error("Missing required fields", {
