@@ -10,7 +10,6 @@
 import { onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import * as functions from "firebase-functions";
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -28,9 +27,10 @@ type DebateRequest = {
 };
 
 // Initialize Gemini with your API key (store securely, e.g., in environment config)
-const genAI = new GoogleGenerativeAI(
-  process.env.GEMINI_API_KEY || functions.config().gemini.api_key
-);
+if (!process.env.GEMINI_API_KEY) {
+  throw new Error("GEMINI_API_KEY environment variable is not set");
+}
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Translation mappings for different speakers and languages
 const SPEAKER_TRANSLATIONS: Record<string, Record<string, string>> = {
