@@ -7,6 +7,25 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
+// Load environment variables from .env file (for local development)
+import * as dotenv from "dotenv";
+import * as path from "path";
+import * as fs from "fs";
+
+// Try to load .env from functions directory (when running from project root)
+// or from current directory (when running from functions directory)
+const functionsEnvPath = path.resolve(process.cwd(), "functions", ".env");
+const currentEnvPath = path.resolve(process.cwd(), ".env");
+
+if (fs.existsSync(functionsEnvPath)) {
+  dotenv.config({ path: functionsEnvPath });
+} else if (fs.existsSync(currentEnvPath)) {
+  dotenv.config({ path: currentEnvPath });
+} else {
+  // Fallback: try default location (current directory)
+  dotenv.config();
+}
+
 import { onRequest } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { GoogleGenerativeAI } from "@google/generative-ai";
