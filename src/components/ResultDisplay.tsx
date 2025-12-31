@@ -1,8 +1,9 @@
-import React, { JSX, useLayoutEffect, useRef } from "react";
+import React, { JSX, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styled from "styled-components";
 import gsap from "gsap";
 import DOMPurify from "dompurify";
+import html2canvas from "html2canvas";
 
 const ResultBox = styled.div`
   margin-top: 2rem;
@@ -17,6 +18,26 @@ const ResultBox = styled.div`
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
+  position: relative;
+`;
+
+const Watermark = styled.div`
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(26, 54, 93, 0.4);
+  pointer-events: none;
+  display: none; /* Hidden by default */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &.visible-in-capture {
+    display: block;
+  }
 `;
 
 const Loading = styled.div`
@@ -96,6 +117,39 @@ const DefaultSection = styled.div`
   box-shadow: 0 2px 4px rgba(113, 128, 150, 0.1);
 `;
 
+const Footer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+`;
+
+const ShareButton = styled.button`
+  background-color: #3182ce;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+
+  &:hover {
+    background-color: #2c5282;
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+`;
+
 type Props = {
   result: string | null;
   loading?: boolean;
@@ -150,9 +204,7 @@ const parseResult = (
       // Extract content from end of current header to start of next header (or end of string)
       const contentStart = currentHeader.endIndex;
       const contentEnd = nextHeader ? nextHeader.index : cleanedResult.length;
-      const content = cleanedResult
-        .substring(contentStart, contentEnd)
-        .trim();
+      const content = cleanedResult.substring(contentStart, contentEnd).trim();
 
       sections.push(createSection(currentHeader.title, content));
     }
@@ -161,7 +213,9 @@ const parseResult = (
   }
 
   // Fallback: return as plain text with line breaks
-  const fallbackContent = DOMPurify.sanitize(cleanedResult.replace(/\n/g, "<br/>"));
+  const fallbackContent = DOMPurify.sanitize(
+    cleanedResult.replace(/\n/g, "<br/>")
+  );
   return (
     <div
       dangerouslySetInnerHTML={{
@@ -174,6 +228,87 @@ const parseResult = (
 const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
   const { t } = useTranslation();
   const boxRef = useRef<HTMLDivElement>(null);
+  const [sharing, setSharing] = useState(false);
+
+  const handleShare = async () => {
+    if (!boxRef.current) return;
+
+    try {
+      setSharing(true);
+
+      const options: any = {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#f8fafc", // Ensure solid background to prevent black bars
+        width: 600, // Force standard width to prevent narrow/tall images on mobile
+        windowWidth: 600,
+        onclone: (clonedDoc: Document) => {
+          // Make watermark visible
+          const watermark = clonedDoc.querySelector(".watermark");
+          if (watermark) {
+            (watermark as HTMLElement).style.display = "block";
+          }
+
+          // Clean up the box styles for capture
+          const clonedBox = clonedDoc.querySelector(
+            ".result-box"
+          ) as HTMLElement;
+          if (clonedBox) {
+            clonedBox.style.margin = "0";
+            clonedBox.style.boxShadow = "none";
+            clonedBox.style.transform = "none";
+            // Ensure box fills the fixed width canvas
+            clonedBox.style.width = "100%";
+            clonedBox.style.maxWidth = "100%";
+            clonedBox.style.borderRadius = "0";
+          }
+
+          // Hide the footer/share button in the clone explicitly
+          const footer = clonedDoc.querySelector("[data-html2canvas-ignore]");
+          if (footer) {
+            (footer as HTMLElement).style.display = "none";
+          }
+        },
+      };
+
+      const canvas = await html2canvas(boxRef.current, options);
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          throw new Error("Failed to generate image");
+        }
+
+        const file = new File([blob], "who-is-right-result.png", {
+          type: "image/png",
+        });
+
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: "Who is Right?",
+              text: "Check out this verdict from Who is Right!",
+              files: [file],
+            });
+          } catch (error) {
+            // Share cancelled or failed, fallback to download
+            if ((error as any).name !== "AbortError") {
+              console.error("Error sharing:", error);
+            }
+          }
+        } else {
+          // Fallback for desktop/unsupported browsers
+          const link = document.createElement("a");
+          link.href = canvas.toDataURL("image/png");
+          link.download = "who-is-right-result.png";
+          link.click();
+        }
+      }, "image/png");
+    } catch (error) {
+      console.error("Error generating image:", error);
+    } finally {
+      setSharing(false);
+    }
+  };
 
   useLayoutEffect(() => {
     if (!boxRef.current || !result) return;
@@ -206,7 +341,9 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
         return (
           <Section key="situation" className="section situation">
             <SectionTitle>{t("situation")}:</SectionTitle>
-            <SituationText dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+            <SituationText
+              dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+            />
           </Section>
         );
       case "the verdict":
@@ -216,14 +353,18 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
         return (
           <Section key="verdict" className="section verdict">
             <SectionTitle>{t("theVerdict")}:</SectionTitle>
-            <VerdictSection dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+            <VerdictSection
+              dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+            />
           </Section>
         );
       default:
         return (
           <Section key={title} className="section default">
             <SectionTitle>{t(title)}:</SectionTitle>
-            <DefaultSection dangerouslySetInnerHTML={{ __html: sanitizedContent }} />
+            <DefaultSection
+              dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+            />
           </Section>
         );
     }
@@ -234,7 +375,35 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
 
   return (
     <ResultBox ref={boxRef} className="result-box">
+      <Watermark className="watermark">whoisright.app</Watermark>
       {parseResult(result, createSection)}
+      <Footer data-html2canvas-ignore="true">
+        <ShareButton onClick={handleShare} disabled={sharing}>
+          {sharing ? (
+            <span>{t("generating")}</span>
+          ) : (
+            <>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
+              {t("shareResult")}
+            </>
+          )}
+        </ShareButton>
+      </Footer>
     </ResultBox>
   );
 };

@@ -119,5 +119,7 @@
   "Colleague B": "Colleague B",
   "Boss": "Boss",
   "Employee": "Employee",
-  "Manager": "Manager"
+  "Manager": "Manager",
+  "shareResult": "Share Result",
+  "generating": "Generating..."
 }
