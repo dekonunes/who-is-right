@@ -40,11 +40,26 @@ const Watermark = styled.div`
   }
 `;
 
-const Loading = styled.div`
-  margin-top: 2rem;
-  font-size: 1.1rem;
-  color: #888;
-`;
+// Wave loading component with Tailwind CSS
+const WaveLoading: React.FC<{ text: string }> = ({ text }) => {
+  return (
+    <div className="mt-8 text-lg text-gray-500">
+      <div className="flex items-center justify-center">
+        {text.split("").map((char, index) => (
+          <span
+            key={index}
+            className="inline-block animate-wave"
+            style={{
+              animationDelay: `${index * 0.2}s`,
+            }}
+          >
+            {char === " " ? "\u00A0" : char}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
 
 const Section = styled.div`
   margin-bottom: 2rem;
@@ -370,7 +385,7 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
     }
   };
 
-  if (loading) return <Loading>{t("loading")}</Loading>;
+  if (loading) return <WaveLoading text={t("loading")} />;
   if (!result) return <ResultBox>{t("resultPlaceholder")}</ResultBox>;
 
   return (
