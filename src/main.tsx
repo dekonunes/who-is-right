@@ -16,6 +16,7 @@ if (lg) {
   else if (lg === "en") langToSet = "en";
   else if (lg === "es") langToSet = "es";
   else if (lg === "tr") langToSet = "tr";
+  else if (lg === "de") langToSet = "de";
   else langToSet = lg;
   i18n.changeLanguage(langToSet);
   localStorage.setItem("appLang", langToSet);
@@ -27,7 +28,7 @@ if (lg) {
   } else {
     // Auto-detect browser language if no preference is set
     const browserLang = navigator.language || (navigator as any).userLanguage;
-    const supportedLanguages = ["en", "pt-BR", "es", "tr"];
+    const supportedLanguages = ["en", "pt-BR", "es", "tr", "de"];
 
     // Normalize browser language code
     let detectedLang: string | null = null;
@@ -37,6 +38,8 @@ if (lg) {
       detectedLang = "es";
     } else if (browserLang.startsWith("tr")) {
       detectedLang = "tr";
+    } else if (browserLang.startsWith("de")) {
+      detectedLang = "de";
     } else if (browserLang.startsWith("en")) {
       detectedLang = "en";
     }

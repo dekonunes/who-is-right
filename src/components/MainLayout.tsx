@@ -127,6 +127,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <option value="pt-BR">Português</option>
               <option value="es">Español</option>
               <option value="tr">Türkçe</option>
+              <option value="de">Deutsch</option>
             </select>
           </div>
 
@@ -154,6 +155,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               <option value="pt-BR">PT</option>
               <option value="es">ES</option>
               <option value="tr">TR</option>
+              <option value="de">DE</option>
             </select>
             <button
               onClick={() => {
