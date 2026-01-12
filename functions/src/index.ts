@@ -95,12 +95,26 @@ const SPEAKER_TRANSLATIONS: Record<string, Record<string, string>> = {
     Boss: "Jefe",
     Employee: "Empleado",
   },
+  tr: {
+    Woman: "Kadın",
+    Man: "Erkek",
+    Mon: "Anne",
+    Child: "Çocuk",
+    Sibling1: "Kardeş 1",
+    Sibling2: "Kardeş 2",
+    "Friend 1": "Arkadaş 1",
+    "Friend 2": "Arkadaş 2",
+    "Co-worker 1": "İş arkadaşı 1",
+    "Co-worker 2": "İş arkadaşı 2",
+    Boss: "Patron",
+    Employee: "Çalışan",
+  },
 };
 
 /**
  * Translates speaker names based on the specified language
  * @param speaker - The speaker name to translate
- * @param language - The target language code (en, pt, es)
+ * @param language - The target language code (en, pt, es, tr)
  * @returns The translated speaker name or the original if not found
  */
 const translateSpeaker = (speaker: string, language: string): string => {

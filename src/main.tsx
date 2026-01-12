@@ -5,22 +5,47 @@ import App from "./App";
 import "./index.css";
 import i18n from "./i18n";
 
-// Set language from URL query param 'lg', e.g. /?lg=pt
+// Language detection priority: URL param > Browser language > localStorage > Default (en)
 const params = new URLSearchParams(window.location.search);
 const lg = params.get("lg");
 let langToSet: string | null = null;
+
 if (lg) {
+  // URL parameter has highest priority
   if (lg === "pt") langToSet = "pt-BR";
   else if (lg === "en") langToSet = "en";
   else if (lg === "es") langToSet = "es";
+  else if (lg === "tr") langToSet = "tr";
   else langToSet = lg;
   i18n.changeLanguage(langToSet);
   localStorage.setItem("appLang", langToSet);
 } else {
-  // If no URL param, check localStorage
+  // Check localStorage for cached language preference
   const cachedLang = localStorage.getItem("appLang");
   if (cachedLang) {
     i18n.changeLanguage(cachedLang);
+  } else {
+    // Auto-detect browser language if no preference is set
+    const browserLang = navigator.language || (navigator as any).userLanguage;
+    const supportedLanguages = ["en", "pt-BR", "es", "tr"];
+
+    // Normalize browser language code
+    let detectedLang: string | null = null;
+    if (browserLang.startsWith("pt")) {
+      detectedLang = "pt-BR";
+    } else if (browserLang.startsWith("es")) {
+      detectedLang = "es";
+    } else if (browserLang.startsWith("tr")) {
+      detectedLang = "tr";
+    } else if (browserLang.startsWith("en")) {
+      detectedLang = "en";
+    }
+
+    // Use detected language if supported, otherwise fall back to default
+    if (detectedLang && supportedLanguages.includes(detectedLang)) {
+      i18n.changeLanguage(detectedLang);
+      localStorage.setItem("appLang", detectedLang);
+    }
   }
 }
 
