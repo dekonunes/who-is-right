@@ -1,24 +1,31 @@
 import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../firebase";
 import iconHappy from "../assets/optimized/icon-happy.webp";
 import gsap from "gsap";
 
+const SUPPORTED_LANGUAGES = ["en", "pt-BR", "es", "tr", "de"];
+
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const headerRef = useRef<HTMLElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
-  const lang =
-    i18n.language === "pt-BR" ? "pt-BR" : i18n.language === "es" ? "es" : "en";
+  const lang = SUPPORTED_LANGUAGES.includes(i18n.language)
+    ? i18n.language
+    : "en";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { label: t("howItWorks"), href: "/how-it-works" },
+    { label: t("howItWorks"), to: `/${lang}/how-it-works`, isExternal: false },
     {
       label: t("contact"),
       href: "mailto:dekonunesss@gmail.com?subject=I want to build AI website",
+      isExternal: true,
     },
   ];
 
@@ -87,30 +94,49 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             className="hidden md:flex justify-end gap-8 items-center"
           >
             <div className="flex items-center gap-9">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-white text-sm font-medium leading-normal whitespace-nowrap hover:underline"
-                  onClick={() => {
-                    // Track navigation link clicks
-                    logEvent(analytics, "navigation_clicked", {
-                      link_text: link.label,
-                      link_href: link.href,
-                      language: i18n.language,
-                      device: "desktop",
-                    });
-                  }}
-                >
-                  {link.label}
-                </a>
-              ))}
+              {navLinks.map((link) =>
+                link.isExternal ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className="text-white text-sm font-medium leading-normal whitespace-nowrap hover:underline"
+                    onClick={() => {
+                      // Track navigation link clicks
+                      logEvent(analytics, "navigation_clicked", {
+                        link_text: link.label,
+                        link_href: link.href,
+                        language: i18n.language,
+                        device: "desktop",
+                      });
+                    }}
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.label}
+                    to={link.to!}
+                    className="text-white text-sm font-medium leading-normal whitespace-nowrap hover:underline"
+                    onClick={() => {
+                      // Track navigation link clicks
+                      logEvent(analytics, "navigation_clicked", {
+                        link_text: link.label,
+                        link_href: link.to,
+                        language: i18n.language,
+                        device: "desktop",
+                      });
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              )}
             </div>
             <select
               value={lang}
               onChange={(e) => {
                 const newLanguage = e.target.value;
-                i18n.changeLanguage(newLanguage);
+                // i18n.changeLanguage(newLanguage); // Handled by LanguageWrapper
                 localStorage.setItem("appLang", newLanguage);
 
                 // Track language change
@@ -119,6 +145,18 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   new_language: newLanguage,
                   page_location: window.location.href,
                 });
+
+                // Navigate to new language path
+                const currentPath = location.pathname;
+                const parts = currentPath.split("/");
+                // parts[0] is "", parts[1] is lang
+                if (SUPPORTED_LANGUAGES.includes(parts[1])) {
+                  parts[1] = newLanguage;
+                } else {
+                  parts.splice(1, 0, newLanguage);
+                }
+                const newPath = parts.join("/") || `/${newLanguage}`;
+                navigate(newPath);
               }}
               aria-label="Select language"
               className="ml-4 bg-[#293a42] text-white rounded-full px-4 py-2 text-sm font-semibold border-none focus:outline-none focus:ring-2 focus:ring-[#add6ea] whitespace-nowrap"
@@ -137,7 +175,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               value={lang}
               onChange={(e) => {
                 const newLanguage = e.target.value;
-                i18n.changeLanguage(newLanguage);
+                // i18n.changeLanguage(newLanguage); // Handled by LanguageWrapper
                 localStorage.setItem("appLang", newLanguage);
 
                 // Track language change
@@ -147,6 +185,18 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   page_location: window.location.href,
                   device: "mobile",
                 });
+
+                // Navigate to new language path
+                const currentPath = location.pathname;
+                const parts = currentPath.split("/");
+                // parts[0] is "", parts[1] is lang
+                if (SUPPORTED_LANGUAGES.includes(parts[1])) {
+                  parts[1] = newLanguage;
+                } else {
+                  parts.splice(1, 0, newLanguage);
+                }
+                const newPath = parts.join("/") || `/${newLanguage}`;
+                navigate(newPath);
               }}
               aria-label="Select language"
               className="bg-[#293a42] text-white rounded-full px-3 py-1 text-sm font-semibold border-none focus:outline-none focus:ring-2 focus:ring-[#add6ea] whitespace-nowrap"
@@ -199,25 +249,45 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-[#293a42] border-b border-[#1e2a30]">
             <div className="px-4 py-3 space-y-3">
-              {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="block text-white text-base font-medium py-2 hover:text-[#add6ea] transition-colors"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    // Track mobile navigation link clicks
-                    logEvent(analytics, "navigation_clicked", {
-                      link_text: link.label,
-                      link_href: link.href,
-                      language: i18n.language,
-                      device: "mobile",
-                    });
-                  }}
-                >
-                  {link.label}
-                </a>
-              ))}
+              {navLinks.map((link) =>
+                link.isExternal ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className="block text-white text-base font-medium py-2 hover:text-[#add6ea] transition-colors"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      // Track mobile navigation link clicks
+                      logEvent(analytics, "navigation_clicked", {
+                        link_text: link.label,
+                        link_href: link.href,
+                        language: i18n.language,
+                        device: "mobile",
+                      });
+                    }}
+                  >
+                    {link.label}
+                  </a>
+                ) : (
+                  <Link
+                    key={link.label}
+                    to={link.to!}
+                    className="block text-white text-base font-medium py-2 hover:text-[#add6ea] transition-colors"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      // Track mobile navigation link clicks
+                      logEvent(analytics, "navigation_clicked", {
+                        link_text: link.label,
+                        link_href: link.to,
+                        language: i18n.language,
+                        device: "mobile",
+                      });
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              )}
             </div>
           </div>
         )}

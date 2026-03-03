@@ -13,7 +13,11 @@ import {
   Routes,
   Route,
   useLocation,
+  Navigate,
+  Outlet,
+  useParams,
 } from "react-router-dom";
+import { Helmet, HelmetProvider } from "react-helmet-async";
 import { logEvent } from "firebase/analytics";
 import { analytics } from "./firebase";
 import MainLayout from "./components/MainLayout";
@@ -22,9 +26,9 @@ import Switch from "./components/Switch";
 // Lazy load components for better performance
 const ResultDisplay = lazy(() => import("./components/ResultDisplay"));
 const HowItWorks = lazy(() => import("./components/HowItWorks"));
-const AmazonRecommendations = lazy(
-  () => import("./components/AmazonRecommendations")
-);
+// const AmazonRecommendations = lazy(
+//   () => import("./components/AmazonRecommendations")
+// );
 import { useTranslation } from "react-i18next";
 import {
   sanitizeInput,
@@ -49,6 +53,7 @@ const QUESTION_MAX = 500;
 const ANSWER_MAX = 300;
 const MIN_LENGTH = 5;
 const DAILY_LIMIT = 15;
+const SUPPORTED_LANGUAGES = ["en", "pt-BR", "es", "tr", "de"];
 
 // Daily usage limit helpers
 const checkDailyLimit = () => {
@@ -176,9 +181,10 @@ interface MainAppProps {
   answerBPlaceholder: string;
   handleSubmit: (e: React.FormEvent) => void;
   handleClear: () => void;
-  resultRef: React.RefObject<HTMLDivElement>;
+  resultRef: React.RefObject<HTMLDivElement | null>;
   QUESTION_MAX: number;
   ANSWER_MAX: number;
+  loadingMessage: string;
 }
 
 const MainApp: React.FC<MainAppProps> = ({
@@ -209,6 +215,7 @@ const MainApp: React.FC<MainAppProps> = ({
   resultRef,
   QUESTION_MAX,
   ANSWER_MAX,
+  loadingMessage,
 }) => {
   const typesRef = useRef<HTMLDivElement>(null);
 
@@ -401,7 +408,9 @@ const MainApp: React.FC<MainAppProps> = ({
           disabled={loading}
           className="flex-1 bg-[#add6ea] text-[#131c20] md:text-base text-[0.9rem] px-6 py-3 rounded-full font-semibold hover:bg-[#8bc4d8] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? t("loading", "Checking...") : t("submit", "Who is right?")}
+          {loading
+            ? loadingMessage || t("loading", "Checking...")
+            : t("submit", "Who is right?")}
         </button>
         <button
           type="button"
@@ -430,11 +439,15 @@ const MainApp: React.FC<MainAppProps> = ({
             </div>
           }
         >
-          <ResultDisplay result={result} loading={loading} />
+          <ResultDisplay
+            result={result}
+            loading={loading}
+            loadingMessage={loadingMessage}
+          />
         </Suspense>
       )}
 
-      {/* Amazon Recommendations */}
+      {/* Amazon Recommendations - Commented out for now
       <Suspense
         fallback={
           <div
@@ -453,30 +466,98 @@ const MainApp: React.FC<MainAppProps> = ({
       >
         <AmazonRecommendations selectedType={selectedType} />
       </Suspense>
+      */}
     </div>
   );
 };
 
-// Component to handle dynamic canonical URLs
-const CanonicalURL: React.FC = () => {
+// Component to handle dynamic language routing and SEO
+const LanguageWrapper: React.FC = () => {
+  const { lang } = useParams<{ lang: string }>();
+  const { i18n, t } = useTranslation();
   const location = useLocation();
 
   useEffect(() => {
-    const canonicalUrl = `https://whoisright.app${location.pathname}`;
-    let canonical = document.querySelector(
-      'link[rel="canonical"]'
-    ) as HTMLLinkElement;
-
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
+    if (lang && SUPPORTED_LANGUAGES.includes(lang) && i18n.language !== lang) {
+      i18n.changeLanguage(lang);
+      localStorage.setItem("appLang", lang);
     }
+  }, [lang, i18n]);
 
-    canonical.href = canonicalUrl;
-  }, [location.pathname]);
+  if (!lang || !SUPPORTED_LANGUAGES.includes(lang)) {
+    return <Navigate to="/en" replace />;
+  }
 
-  return null;
+  // Prevent rendering content with wrong language
+  if (i18n.language !== lang) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: "#131c20",
+          color: "white",
+        }}
+      >
+        Loading...
+      </div>
+    );
+  }
+
+  // Calculate canonical path - remove lang prefix for default lang if we want, or keep it
+  // For distinct URLs, we keep the lang prefix
+  const canonicalUrl = `https://whoisright.app${location.pathname}`;
+
+  // Clean path for hreflang (e.g., /how-it-works)
+  const cleanPath =
+    location.pathname.replace(/^\/[a-z]{2}(-[A-Z]{2})?/, "") || "/";
+
+  return (
+    <>
+      <Helmet>
+        <html lang={lang} />
+        <link rel="canonical" href={canonicalUrl} />
+        <title>
+          {t("appName", "Who Is Right?")} –{" "}
+          {t(
+            "appDescription",
+            "Get AI-powered analysis to settle any argument or debate"
+          )}
+        </title>
+        <meta
+          name="description"
+          content={t(
+            "appDescription",
+            "Get AI-powered analysis to settle any argument or debate"
+          )}
+        />
+
+        {/* Hreflang tags */}
+        {SUPPORTED_LANGUAGES.map((l) => (
+          <link
+            key={l}
+            rel="alternate"
+            href={`https://whoisright.app/${l}${
+              cleanPath === "/" ? "" : cleanPath
+            }`}
+            hrefLang={l}
+          />
+        ))}
+        <link
+          rel="alternate"
+          href={`https://whoisright.app/en${
+            cleanPath === "/" ? "" : cleanPath
+          }`}
+          hrefLang="x-default"
+        />
+      </Helmet>
+      <MainLayout>
+        <Outlet />
+      </MainLayout>
+    </>
+  );
 };
 
 const App: React.FC = () => {
@@ -533,6 +614,7 @@ const App: React.FC = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [i18n.language]);
+
   const [question, setQuestion] = useState("");
   const [answerA, setAnswerA] = useState("");
   const [answerB, setAnswerB] = useState("");
@@ -559,6 +641,7 @@ const App: React.FC = () => {
   );
   const [saveError, setSaveError] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string>(userTypes[0].key);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
 
   const selectedTypeObj = useMemo(
@@ -676,8 +759,26 @@ const App: React.FC = () => {
       });
       return;
     }
+
+    // Pick a random loading message
+    const messages = t("loadingMessages", { returnObjects: true }) as string[];
+    if (Array.isArray(messages) && messages.length > 0) {
+      const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+      setLoadingMessage(randomMsg);
+    } else {
+      setLoadingMessage(t("loading", "Checking..."));
+    }
+
     setLoading(true);
     setResult(null);
+
+    // Scroll to result area where loading wave will show
+    setTimeout(() => {
+      resultRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 100);
 
     try {
       const response = await fetch(
@@ -755,6 +856,7 @@ const App: React.FC = () => {
     setAnswerA("");
     setAnswerB("");
     setResult(null);
+    setLoadingMessage("");
     setErrors({});
     // Track form clear
     logEvent(analytics, "form_cleared", {
@@ -765,68 +867,74 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <CanonicalURL />
-      <MainLayout>
+      <HelmetProvider>
         <Routes>
           <Route
             path="/"
-            element={
-              <MainApp
-                t={t}
-                i18n={i18n}
-                question={question}
-                setQuestion={setQuestion}
-                answerA={answerA}
-                setAnswerA={setAnswerA}
-                answerB={answerB}
-                setAnswerB={setAnswerB}
-                result={result}
-                loading={loading}
-                errors={errors}
-                saveStatus={saveStatus}
-                saveError={saveError}
-                selectedType={selectedType}
-                setSelectedType={setSelectedType}
-                answerTone={answerTone}
-                setAnswerTone={setAnswerTone}
-                selectedTypeObj={selectedTypeObj}
-                answerALabel={answerALabel}
-                answerBLabel={answerBLabel}
-                answerAPlaceholder={answerAPlaceholder}
-                answerBPlaceholder={answerBPlaceholder}
-                handleSubmit={handleSubmit}
-                handleClear={handleClear}
-                resultRef={resultRef}
-                QUESTION_MAX={QUESTION_MAX}
-                ANSWER_MAX={ANSWER_MAX}
-              />
-            }
+            element={<Navigate to={`/${i18n.language}`} replace />}
           />
-          <Route
-            path="/how-it-works"
-            element={
-              <Suspense
-                fallback={
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      height: "200px",
-                      fontSize: "18px",
-                      color: "#666",
-                    }}
-                  >
-                    Loading...
-                  </div>
-                }
-              >
-                <HowItWorks />
-              </Suspense>
-            }
-          />
+          <Route path="/:lang" element={<LanguageWrapper />}>
+            <Route
+              index
+              element={
+                <MainApp
+                  t={t}
+                  i18n={i18n}
+                  question={question}
+                  setQuestion={setQuestion}
+                  answerA={answerA}
+                  setAnswerA={setAnswerA}
+                  answerB={answerB}
+                  setAnswerB={setAnswerB}
+                  result={result}
+                  loading={loading}
+                  errors={errors}
+                  saveStatus={saveStatus}
+                  saveError={saveError}
+                  selectedType={selectedType}
+                  setSelectedType={setSelectedType}
+                  answerTone={answerTone}
+                  setAnswerTone={setAnswerTone}
+                  selectedTypeObj={selectedTypeObj}
+                  answerALabel={answerALabel}
+                  answerBLabel={answerBLabel}
+                  answerAPlaceholder={answerAPlaceholder}
+                  answerBPlaceholder={answerBPlaceholder}
+                  handleSubmit={handleSubmit}
+                  handleClear={handleClear}
+                  resultRef={resultRef}
+                  QUESTION_MAX={QUESTION_MAX}
+                  ANSWER_MAX={ANSWER_MAX}
+                  loadingMessage={loadingMessage}
+                />
+              }
+            />
+            <Route
+              path="how-it-works"
+              element={
+                <Suspense
+                  fallback={
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "200px",
+                        fontSize: "18px",
+                        color: "#666",
+                      }}
+                    >
+                      Loading...
+                    </div>
+                  }
+                >
+                  <HowItWorks />
+                </Suspense>
+              }
+            />
+          </Route>
         </Routes>
-      </MainLayout>
+      </HelmetProvider>
     </Router>
   );
 };

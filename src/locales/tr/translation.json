@@ -121,5 +121,16 @@
   "Employee": "Çalışan",
   "Manager": "Yönetici",
   "shareResult": "Sonucu Paylaş",
-  "generating": "Oluşturuluyor..."
+  "generating": "Oluşturuluyor...",
+  "loadingMessages": [
+    "Kaos Mahkemesi'ne giriliyor...",
+    "Yapay Zeka Yargıcına fazladan RAM ile rüşvet veriliyor...",
+    "Tek Kişilik Jüri çağrılıyor...",
+    "Küçüklük seviyesi hesaplanıyor...",
+    "1.000 yıllık terapi simüle ediliyor...",
+    "Drama çözülüyor...",
+    "Seni İkilik sistemde yargılıyorum...",
+    "Mantık aranıyor... hala aranıyor...",
+    "Göz devirmeler ölçülüyor..."
+  ]
 }

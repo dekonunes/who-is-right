@@ -32,27 +32,22 @@
   "answerBLabel.couple": "Was er denkt",
   "answerAPlaceholder.couple": "Schreibe ihre Seite der Geschichte...",
   "answerBPlaceholder.couple": "Schreibe seine Seite der Geschichte...",
-
   "answerALabel.friends": "Meinung von Freund A",
   "answerBLabel.friends": "Meinung von Freund B",
   "answerAPlaceholder.friends": "Schreibe die Seite von Freund A...",
   "answerBPlaceholder.friends": "Schreibe die Seite von Freund B...",
-
   "answerALabel.mom_and_child": "Mamas Ansicht",
   "answerBLabel.mom_and_child": "Ansicht des Kindes",
   "answerAPlaceholder.mom_and_child": "Schreibe Mamas Seite...",
   "answerBPlaceholder.mom_and_child": "Schreibe die Seite des Kindes...",
-
   "answerALabel.siblings": "Ansicht von Geschwister A",
   "answerBLabel.siblings": "Ansicht von Geschwister B",
   "answerAPlaceholder.siblings": "Schreibe die Seite von Geschwister A...",
   "answerBPlaceholder.siblings": "Schreibe die Seite von Geschwister B...",
-
   "answerALabel.co_workers": "Ansicht von Kollege A",
   "answerBLabel.co_workers": "Ansicht von Kollege B",
   "answerAPlaceholder.co_workers": "Schreibe die Seite von Kollege A...",
   "answerBPlaceholder.co_workers": "Schreibe die Seite von Kollege B...",
-
   "answerALabel.boss_and_employee": "Ansicht des Chefs",
   "answerBLabel.boss_and_employee": "Ansicht des Mitarbeiters",
   "answerAPlaceholder.boss_and_employee": "Schreibe die Seite des Chefs...",
@@ -121,5 +116,16 @@
   "Employee": "Mitarbeiter",
   "Manager": "Manager",
   "shareResult": "Ergebnis teilen",
-  "generating": "Wird generiert..."
+  "generating": "Wird generiert...",
+  "loadingMessages": [
+    "Eintritt in den Hof des Chaos...",
+    "Bestechung des KI-Richters mit zusätzlichem RAM...",
+    "Einberufung der Jury von einer Person...",
+    "Berechnung des Grades der Kleinlichkeit...",
+    "Simulation von 1.000 Jahren Beratung...",
+    "Dekodierung des Dramas...",
+    "Beurteilung in Binärcode...",
+    "Suche nach der Logik... suche immer noch...",
+    "Messung des Augenrollens..."
+  ]
 }

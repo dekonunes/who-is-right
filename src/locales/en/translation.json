@@ -121,5 +121,16 @@
   "Employee": "Employee",
   "Manager": "Manager",
   "shareResult": "Share Result",
-  "generating": "Generating..."
+  "generating": "Generating...",
+  "loadingMessages": [
+    "Entering the Court of Chaos...",
+    "Bribing the AI Judge with extra RAM...",
+    "Summoning the Jury of One...",
+    "Calculating the level of pettiness...",
+    "Simulating 1,000 years of counseling...",
+    "Decoding the drama...",
+    "Judging you in Binary...",
+    "Searching for the logic... still searching...",
+    "Measuring the eye-rolls..."
+  ]
 }

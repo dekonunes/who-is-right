@@ -22,6 +22,7 @@
     "i18next": "^25.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-helmet-async": "^2.0.5",
     "react-i18next": "^15.6.0",
     "react-router-dom": "^7.7.0",
     "styled-components": "^6.1.19"
@@ -32,6 +33,7 @@
     "@types/html2canvas": "^0.5.35",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@types/react-helmet-async": "^1.0.1",
     "@typescript-eslint/eslint-plugin": "^8.36.0",
     "@typescript-eslint/parser": "^8.36.0",
     "@vitejs/plugin-react": "^4.6.0",

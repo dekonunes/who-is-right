@@ -135,9 +135,32 @@ const DefaultSection = styled.div`
 const Footer = styled.div`
   display: flex;
   justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
   margin-top: 2rem;
   padding-top: 1rem;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
+`;
+
+const BuyMeCoffeeLink = styled.a`
+  background-color: #ffdd00;
+  color: #000000;
+  padding: 0.5rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  text-decoration: none;
+
+  &:hover {
+    background-color: #e5c700;
+    transform: translateY(-1px);
+  }
 `;
 
 const ShareButton = styled.button`
@@ -168,6 +191,7 @@ const ShareButton = styled.button`
 type Props = {
   result: string | null;
   loading?: boolean;
+  loadingMessage?: string;
 };
 
 // Function to parse and structure the AI response
@@ -240,7 +264,11 @@ const parseResult = (
   );
 };
 
-const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
+const ResultDisplay: React.FC<Props> = ({
+  result,
+  loading,
+  loadingMessage,
+}) => {
   const { t } = useTranslation();
   const boxRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
@@ -382,10 +410,10 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
             />
           </Section>
         );
-    }
+      }
   };
 
-  if (loading) return <WaveLoading text={t("loading")} />;
+  if (loading) return <WaveLoading text={loadingMessage || t("loading")} />;
   if (!result) return <ResultBox>{t("resultPlaceholder")}</ResultBox>;
 
   return (
@@ -418,6 +446,29 @@ const ResultDisplay: React.FC<Props> = ({ result, loading }) => {
             </>
           )}
         </ShareButton>
+        <BuyMeCoffeeLink
+          href="https://buymeacoffee.com/dekonunessh"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M17 8h1a4 4 0 1 1 0 8h-1" />
+            <path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" />
+            <line x1="6" y1="2" x2="6" y2="4" />
+            <line x1="10" y1="2" x2="10" y2="4" />
+            <line x1="14" y1="2" x2="14" y2="4" />
+          </svg>
+          Buy me a coffee
+        </BuyMeCoffeeLink>
       </Footer>
     </ResultBox>
   );

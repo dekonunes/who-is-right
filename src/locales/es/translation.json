@@ -110,5 +110,16 @@
   "Employee": "Empleado(a)",
   "Manager": "Gerente",
   "shareResult": "Compartir Resultado",
-  "generating": "Generando..."
+  "generating": "Generando...",
+  "loadingMessages": [
+    "Entrando en la Corte del Caos...",
+    "Sobornando al Juez de IA con RAM extra...",
+    "Invocando al Jurado de Una Sola Persona...",
+    "Calculando el nivel de mezquindad...",
+    "Simulando 1.000 años de terapia...",
+    "Decodificando el drama...",
+    "Juzgándote en binario...",
+    "Buscando la lógica... todavía buscando...",
+    "Midiendo los ojos en blanco..."
+  ]
 }
