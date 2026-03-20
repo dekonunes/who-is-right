@@ -533,6 +533,10 @@ const LanguageWrapper: React.FC = () => {
             "Get AI-powered analysis to settle any argument or debate"
           )}
         />
+        <meta property="og:title" content={`${t("appName", "Who Is Right?")} – ${t("appDescription", "Get AI-powered analysis to settle any argument or debate")}`} />
+        <meta property="og:description" content={t("appDescription", "Get AI-powered analysis to settle any argument or debate")} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:locale" content={lang === "pt-BR" ? "pt_BR" : lang} />
 
         {/* Hreflang tags */}
         {SUPPORTED_LANGUAGES.map((l) => (
@@ -552,6 +556,29 @@ const LanguageWrapper: React.FC = () => {
           }`}
           hrefLang="x-default"
         />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": t("appName", "Who Is Right?"),
+            "description": t("appDescription", "Get AI-powered analysis to settle any argument or debate"),
+            "url": canonicalUrl,
+            "applicationCategory": "EntertainmentApplication",
+            "operatingSystem": "Any",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "inLanguage": SUPPORTED_LANGUAGES,
+            "author": {
+              "@type": "Organization",
+              "name": "Who Is Right?"
+            }
+          })}
+        </script>
       </Helmet>
       <MainLayout>
         <Outlet />

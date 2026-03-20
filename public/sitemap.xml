@@ -1,27 +1,137 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Homepage -->
   <url>
-    <loc>https://whoisright.app/</loc>
-    <lastmod>2024-12-19</lastmod>
+    <loc>https://whoisright.app/en</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en" />
+    <lastmod>2026-03-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
   <url>
-    <loc>https://whoisright.app/how-it-works</loc>
-    <lastmod>2024-12-19</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://www.whoisright.app/</loc>
-    <lastmod>2024-12-19</lastmod>
+    <loc>https://whoisright.app/pt-BR</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en" />
+    <lastmod>2026-03-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
   <url>
-    <loc>https://www.whoisright.app/how-it-works</loc>
-    <lastmod>2024-12-19</lastmod>
+    <loc>https://whoisright.app/es</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en" />
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://whoisright.app/tr</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en" />
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://whoisright.app/de</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en" />
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- How It Works -->
+  <url>
+    <loc>https://whoisright.app/en/how-it-works</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en/how-it-works" />
+    <lastmod>2026-03-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
-</urlset> 
+
+  <url>
+    <loc>https://whoisright.app/pt-BR/how-it-works</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en/how-it-works" />
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://whoisright.app/es/how-it-works</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en/how-it-works" />
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://whoisright.app/tr/how-it-works</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en/how-it-works" />
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://whoisright.app/de/how-it-works</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://whoisright.app/en/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://whoisright.app/pt-BR/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://whoisright.app/es/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="tr" href="https://whoisright.app/tr/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://whoisright.app/de/how-it-works" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://whoisright.app/en/how-it-works" />
+    <lastmod>2026-03-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
