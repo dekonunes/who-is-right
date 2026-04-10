@@ -347,8 +347,32 @@ export const saveDebate = onRequest(
       });
       console.log("Debate saved with ID:", docRef.id);
       res.status(200).send({ id: docRef.id, verdict });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving debate", error);
+
+      // Save error audit log to Firestore
+      try {
+        await db.collection("debate_errors").add({
+          input: {
+            question,
+            answerA,
+            answerB,
+            type,
+            language,
+            tone: normalizedTone,
+          },
+          error: {
+            message: error?.message || "Unknown error",
+            status: error?.status || error?.httpStatusCode || null,
+            code: error?.code || null,
+            stack: error?.stack || null,
+          },
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } catch (auditError) {
+        console.error("Failed to save error audit log", auditError);
+      }
+
       res.status(500).send({ error: "Error saving debate" });
     }
   }
