@@ -157,7 +157,7 @@ export const getGeminiVerdict = async ({
   tone?: "funny" | "serious";
 }) => {
   const tonePreference = tone === "serious" ? "serious" : "funny";
-  const model = genAI.getGenerativeModel({ model: "gemini-3-flash-preview" });
+  const model = genAI.getGenerativeModel({ model: "gemini-3.8-flash" });
   const promptPart1 = `You are an impartial AI judge created for a web app called 'Who is Right?'. Your purpose is to settle playful debates between two people, usually a`;
   const toneInstruction =
     tonePreference === "serious"

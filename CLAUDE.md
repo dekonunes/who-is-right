@@ -19,7 +19,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Backend (Firebase Cloud Functions)
 - **saveDebate Function** (`functions/src/index.ts`): HTTP function that receives debate submissions, calls Gemini API, saves to Firestore, and returns the verdict
-- **getGeminiVerdict**: Uses Gemini 3 Flash Preview model with custom prompts tailored to each debate type and tone preference
+- **getGeminiVerdict**: Uses Gemini 3.8 Flash model with custom prompts tailored to each debate type and tone preference
 - **CORS Configuration**: Allows requests from localhost, Firebase hosting domains, and custom domain (whoisright.app)
 - **Speaker Translation**: Translates speaker names (Woman/Man, Mom/Child, etc.) based on the selected language
 
@@ -70,7 +70,7 @@ npm run logs         # View function logs
 - Valid debate types are enforced on both client and server
 
 ### Gemini AI Integration
-- Model: `gemini-3-flash-preview`
+- Model: `gemini-3.8-flash`
 - API key stored in Firebase Functions config or environment variable
 - Prompts include critical operational rules to:
   - Detect and respond in the same language as inputs
