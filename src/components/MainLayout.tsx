@@ -30,6 +30,8 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ];
 
+  const buildAppLink = navLinks.find((link) => link.isButton);
+
   useLayoutEffect(() => {
     if (!headerRef.current) return;
     const ctx = gsap.context(() => {
@@ -78,15 +80,37 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           ref={headerRef}
           className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#293a42] px-4 md:px-10 py-3 bg-[#131c20]"
         >
-          <div ref={logoRef} className="flex items-center gap-4 text-white">
+          <div ref={logoRef} className="flex items-center gap-2 sm:gap-4 text-white min-w-0">
             <img
               src={iconHappy}
               alt="Who is Right logo"
-              className="h-12 w-auto mr-2"
+              className="h-10 sm:h-12 w-auto shrink-0 mr-1 sm:mr-2"
             />
-            <h2 className="text-white text-lg font-bold leading-tight tracking-[-0.015em]">
+            <h2 className="hidden md:block text-white text-lg font-bold leading-tight tracking-[-0.015em]">
               Who Is Right?
             </h2>
+            {buildAppLink && (
+              <a
+                href={buildAppLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="md:hidden glow-on-hover"
+                onClick={() => {
+                  try {
+                    logEvent(analytics, "navigation_clicked", {
+                      link_text: buildAppLink.label,
+                      link_href: buildAppLink.href,
+                      language: i18n.language,
+                      device: "mobile",
+                    });
+                  } catch (err) {
+                    console.warn("Analytics error:", err);
+                  }
+                }}
+              >
+                {buildAppLink.label}
+              </a>
+            )}
           </div>
 
           {/* Desktop Navigation */}
@@ -197,8 +221,8 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </select>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="md:hidden flex items-center gap-4">
+          {/* Mobile Controls */}
+          <div className="md:hidden flex items-center gap-2 sm:gap-4 shrink-0">
             <select
               value={lang}
               onChange={(e) => {
@@ -227,7 +251,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 navigate(newPath);
               }}
               aria-label="Select language"
-              className="bg-[#293a42] text-white rounded-full px-3 py-1 text-sm font-semibold border-none focus:outline-none focus:ring-2 focus:ring-[#add6ea] whitespace-nowrap"
+              className="bg-[#293a42] text-white rounded-full px-2.5 sm:px-3 py-1 text-xs sm:text-sm font-semibold border-none focus:outline-none focus:ring-2 focus:ring-[#add6ea] whitespace-nowrap"
             >
               <option value="en">EN</option>
               <option value="pt-BR">PT</option>
@@ -239,11 +263,15 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               onClick={() => {
                 const newState = !isMobileMenuOpen;
                 setIsMobileMenuOpen(newState);
-                // Track mobile menu toggle
-                logEvent(analytics, "mobile_menu_toggled", {
-                  menu_state: newState ? "opened" : "closed",
-                  language: i18n.language,
-                });
+                try {
+                  // Track mobile menu toggle
+                  logEvent(analytics, "mobile_menu_toggled", {
+                    menu_state: newState ? "opened" : "closed",
+                    language: i18n.language,
+                  });
+                } catch (err) {
+                  console.warn("Analytics error:", err);
+                }
               }}
               className="text-white p-2 focus:outline-none"
               aria-label="Toggle mobile menu"
@@ -284,7 +312,7 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       href={link.href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="glow-on-hover w-full"
+                      className="glow-on-hover !w-full"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
                         try {

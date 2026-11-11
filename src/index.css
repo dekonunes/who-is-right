@@ -127,6 +127,22 @@ button:focus-visible {
   transition: transform 0.2s ease;
 }
 
+@media (max-width: 767px) {
+  .glow-on-hover {
+    min-width: 0;
+    height: 38px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .glow-on-hover {
+    padding: 0 16px;
+    font-size: 13px;
+  }
+}
+
 .glow-on-hover:before {
   content: '';
   pointer-events: none;
