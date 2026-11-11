@@ -30,6 +30,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     },
   ];
 
+  const MOBILE_MAILTO =
+    "mailto:dekonunesss@gmail.com?subject=I%20want%20to%20build%20AI%20website";
+
   const buildAppLink = navLinks.find((link) => link.isButton);
 
   useLayoutEffect(() => {
@@ -91,15 +94,13 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </h2>
             {buildAppLink && (
               <a
-                href={buildAppLink.href}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={MOBILE_MAILTO}
                 className="md:hidden glow-on-hover"
                 onClick={() => {
                   try {
                     logEvent(analytics, "navigation_clicked", {
                       link_text: buildAppLink.label,
-                      link_href: buildAppLink.href,
+                      link_href: MOBILE_MAILTO,
                       language: i18n.language,
                       device: "mobile",
                     });
@@ -309,16 +310,14 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 link.isButton ? (
                   <div key={link.label} className="pt-2 pb-1">
                     <a
-                      href={link.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={MOBILE_MAILTO}
                       className="glow-on-hover !w-full"
                       onClick={() => {
                         setIsMobileMenuOpen(false);
                         try {
                           logEvent(analytics, "navigation_clicked", {
                             link_text: link.label,
-                            link_href: link.href,
+                            link_href: MOBILE_MAILTO,
                             language: i18n.language,
                             device: "mobile",
                           });
