@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useLayoutEffect } from "react";
+import React, { useRef, useState, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { logEvent } from "firebase/analytics";
@@ -21,11 +21,12 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { label: t("howItWorks"), to: `/${lang}/how-it-works`, isExternal: false },
+    { label: t("howItWorks"), to: `/${lang}/how-it-works`, isExternal: false, isButton: false },
     {
-      label: t("contact"),
-      href: "mailto:dekonunesss@gmail.com?subject=I want to build AI website",
+      label: t("contact", "Build your own AI project"),
+      href: "https://mail.google.com/mail/?view=cm&fs=1&to=dekonunesss@gmail.com&su=I%20want%20to%20build%20AI%20website",
       isExternal: true,
+      isButton: true,
     },
   ];
 
@@ -93,21 +94,48 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             ref={navRef}
             className="hidden md:flex justify-end gap-8 items-center"
           >
-            <div className="flex items-center gap-9">
+            <div className="flex items-center gap-6">
               {navLinks.map((link) =>
-                link.isExternal ? (
+                link.isButton ? (
                   <a
                     key={link.label}
                     href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="glow-on-hover"
+                    onClick={() => {
+                      try {
+                        logEvent(analytics, "navigation_clicked", {
+                          link_text: link.label,
+                          link_href: link.href,
+                          language: i18n.language,
+                          device: "desktop",
+                        });
+                      } catch (err) {
+                        console.warn("Analytics error:", err);
+                      }
+                    }}
+                  >
+                    {link.label}
+                  </a>
+                ) : link.isExternal ? (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-white text-sm font-medium leading-normal whitespace-nowrap hover:underline"
                     onClick={() => {
-                      // Track navigation link clicks
-                      logEvent(analytics, "navigation_clicked", {
-                        link_text: link.label,
-                        link_href: link.href,
-                        language: i18n.language,
-                        device: "desktop",
-                      });
+                      try {
+                        logEvent(analytics, "navigation_clicked", {
+                          link_text: link.label,
+                          link_href: link.href,
+                          language: i18n.language,
+                          device: "desktop",
+                        });
+                      } catch (err) {
+                        console.warn("Analytics error:", err);
+                      }
                     }}
                   >
                     {link.label}
@@ -250,20 +278,49 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="md:hidden bg-[#293a42] border-b border-[#1e2a30]">
             <div className="px-4 py-3 space-y-3">
               {navLinks.map((link) =>
-                link.isExternal ? (
+                link.isButton ? (
+                  <div key={link.label} className="pt-2 pb-1">
+                    <a
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="glow-on-hover w-full"
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        try {
+                          logEvent(analytics, "navigation_clicked", {
+                            link_text: link.label,
+                            link_href: link.href,
+                            language: i18n.language,
+                            device: "mobile",
+                          });
+                        } catch (err) {
+                          console.warn("Analytics error:", err);
+                        }
+                      }}
+                    >
+                      {link.label}
+                    </a>
+                  </div>
+                ) : link.isExternal ? (
                   <a
                     key={link.label}
                     href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="block text-white text-base font-medium py-2 hover:text-[#add6ea] transition-colors"
                     onClick={() => {
                       setIsMobileMenuOpen(false);
-                      // Track mobile navigation link clicks
-                      logEvent(analytics, "navigation_clicked", {
-                        link_text: link.label,
-                        link_href: link.href,
-                        language: i18n.language,
-                        device: "mobile",
-                      });
+                      try {
+                        logEvent(analytics, "navigation_clicked", {
+                          link_text: link.label,
+                          link_href: link.href,
+                          language: i18n.language,
+                          device: "mobile",
+                        });
+                      } catch (err) {
+                        console.warn("Analytics error:", err);
+                      }
                     }}
                   >
                     {link.label}
